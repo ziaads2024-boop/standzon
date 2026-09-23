@@ -1,8 +1,9 @@
 import { Metadata } from "next";
 import { cache } from "react";
 import { notFound } from "next/navigation";
-import ServerCountryCityPage from "@/components/ServerCountryCityPage";
 import CountryPageClientWrapper from "@/components/CountryPageClientWrapper";
+import UaeLocationPage from "@/components/location-v2/UaeLocationPage";
+import CountryLocationPage from "@/components/location-v2/CountryLocationPage";
 import { GLOBAL_EXHIBITION_DATA } from "@/lib/data/globalCities";
 import { getCountryCodeByName } from "@/lib/utils/countryUtils";
 import { getCitiesByCountry } from "@/lib/supabase/client";
@@ -323,18 +324,24 @@ export default async function CountryPage({ params, searchParams }: CountryPageP
       <JsonLd data={jsonLd} />
       <div className="font-inter">
         <CountryPageClientWrapper>
-          <ServerCountryCityPage
-            country={countryInfo.name}
-            initialBuilders={builders}
-            initialContent={mergedContent}
-            cmsContent={cmsContent}
-            cities={cities}
-            hideCitiesSection={false}
-            serverCmsContent={cmsContent}
-            currentPage={currentPageNum}
-            totalBuilders={totalBuilders}
-            totalPages={totalPages}
-          />
+          {countrySlug === "united-arab-emirates" ? (
+            <UaeLocationPage
+              builders={builders}
+              cities={cities}
+              cmsContent={cmsContent}
+              mergedContent={mergedContent}
+              totalBuilders={totalBuilders}
+            />
+          ) : (
+            <CountryLocationPage
+              countrySlug={countrySlug}
+              countryName={countryInfo.name}
+              builders={builders}
+              cities={cities}
+              cmsContent={cmsContent}
+              totalBuilders={totalBuilders}
+            />
+          )}
         </CountryPageClientWrapper>
       </div>
     </ServerPageWithBreadcrumbs>

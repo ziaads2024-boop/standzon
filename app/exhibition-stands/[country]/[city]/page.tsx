@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import ServerCountryCityPage from "@/components/ServerCountryCityPage";
+import DubaiLocationPage from "@/components/location-v2/DubaiLocationPage";
+import CityLocationPage from "@/components/location-v2/CityLocationPage";
 import {
   getCityBySlug as getGlobalCityBySlug,
   getCountryBySlug as getGlobalCountryBySlug,
@@ -572,20 +573,19 @@ export default async function CityPage({ params, searchParams }: CityPageProps) 
     <ServerPageWithBreadcrumbs pathname={`/exhibition-stands/${countrySlug}/${citySlug}`}>
       <JsonLd data={jsonLd} />
       <div className="font-inter">
-        <ServerCountryCityPage
-          country={countryName}
-          city={cityName}
-          initialBuilders={builders}
-          initialContent={mergedContent}
-          cmsContent={cmsContent}
-          showQuoteForm={true}
-          hideCitiesSection={false}
-          cities={cities}
-          currentPage={currentPageNum}
-          totalBuilders={totalBuilders}
-          totalPages={totalPages}
-          serverCmsContent={cmsContent}
-        />
+        {countrySlug === "united-arab-emirates" && citySlug === "dubai" ? (
+          <DubaiLocationPage builders={builders} cmsContent={cmsContent} totalBuilders={totalBuilders} />
+        ) : (
+          <CityLocationPage
+            countrySlug={countrySlug}
+            countryName={countryName}
+            citySlug={citySlug}
+            cityName={cityName}
+            builders={builders}
+            cmsContent={cmsContent}
+            totalBuilders={totalBuilders}
+          />
+        )}
       </div>
     </ServerPageWithBreadcrumbs>
   );

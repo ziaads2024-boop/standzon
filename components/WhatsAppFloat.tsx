@@ -19,7 +19,7 @@ export default function WhatsAppFloat() {
   return (
     <>
       {/* WhatsApp Float Button */}
-      <div className="fixed bottom-6 right-6 z-50">
+      <div id="whatsapp-float-button" className="fixed bottom-6 right-6 z-50 transition-[bottom] duration-300">
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 animate-float"
@@ -30,7 +30,7 @@ export default function WhatsAppFloat() {
 
       {/* WhatsApp Chat Bubble */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 bg-white rounded-2xl shadow-2xl max-w-sm w-80 overflow-hidden animate-scale-in">
+        <div id="whatsapp-chat-bubble" className="fixed bottom-24 right-6 z-50 bg-white rounded-2xl shadow-2xl max-w-sm w-80 overflow-hidden animate-scale-in transition-[bottom] duration-300">
           {/* Header */}
           <div className="bg-green-500 text-white p-4 flex items-center justify-between">
             <div className="flex items-center space-x-3">

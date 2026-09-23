@@ -95,9 +95,21 @@ export default function Footer() {
     <footer className="bg-[#252525] text-white pt-20 pb-10 px-6 border-t border-white/5 w-full">
       <div className="max-w-7xl mx-auto">
         {/* Main columns */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-20">
+        {/*
+          Explicit calc() percentage tracks, not `grid-cols-N` (minmax(0,1fr)):
+          with this column's real content (a long address + a 7-country list),
+          `1fr` tracks resolved unevenly — one column claimed ~300px, its
+          sibling was squeezed to ~0–86px and its links stopped wrapping. `fr`
+          distributes space based on each track's content, so asymmetric
+          content produces asymmetric columns even with minmax(0, 1fr).
+          Percentage tracks alone fixed the unevenness but then overflowed by
+          the gap itself (2×50% + gap-12 > 100%; 4×25% + 3×gap-12 > 100%,
+          since raw percentages don't subtract `gap` the way `fr` does) — each
+          track's calc() below subtracts its share of the total gap.
+        */}
+        <div className="grid grid-cols-[calc(50%-1.5rem)_calc(50%-1.5rem)] gap-12 mb-20 md:grid-cols-[calc(25%-2.25rem)_calc(25%-2.25rem)_calc(25%-2.25rem)_calc(25%-2.25rem)]">
           {/* Company Info */}
-          <div className="col-span-2 md:col-span-1">
+          <div className="col-span-2 min-w-0 md:col-span-1">
             <div className="flex items-center gap-2 mb-8">
               <Image src={logoImg} alt="StandsZone" width={120} height={36} className="h-8 w-auto brightness-0 invert" style={{ height: 'auto' }} priority />
             </div>
@@ -107,10 +119,10 @@ export default function Footer() {
 
             {/* Contact info */}
             <div className="space-y-3">
-              <div className="flex items-center gap-3">
+              <div className="flex min-w-0 items-center gap-3">
                 <FiPhone className="w-3 h-3 text-white flex-shrink-0" />
                 {footerData?.contact?.phoneLink ? (
-                  <a href={footerData.contact.phoneLink} className="text-xs font-bold uppercase tracking-widest text-white hover:text-[#CC2E2E] transition-colors flex items-center">
+                  <a href={footerData.contact.phoneLink} className="flex min-w-0 items-center whitespace-normal break-words text-xs font-bold uppercase tracking-widest text-white transition-colors hover:text-[#CC2E2E]">
                     {footerData.contact.phone}
                     <FiExternalLink className="w-3 h-3 ml-1 opacity-90 flex-shrink-0" />
                   </a>
@@ -118,10 +130,10 @@ export default function Footer() {
                   <span className="text-xs font-bold uppercase tracking-widest">{footerData?.contact?.phone || siteData.contact?.phone || fallbackData.contact.phone}</span>
                 )}
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex min-w-0 items-center gap-3">
                 <FiMail className="w-3 h-3 text-white flex-shrink-0" />
                 {footerData?.contact?.emailLink ? (
-                  <a href={footerData.contact.emailLink} className="text-xs font-bold uppercase tracking-widest text-white hover:text-[#CC2E2E] transition-colors flex items-center">
+                  <a href={footerData.contact.emailLink} className="flex min-w-0 items-center whitespace-normal break-words text-xs font-bold uppercase tracking-widest text-white transition-colors hover:text-[#CC2E2E]">
                     {footerData.contact.email}
                     <FiExternalLink className="w-3 h-3 ml-1 opacity-90 flex-shrink-0" />
                   </a>
@@ -129,10 +141,10 @@ export default function Footer() {
                   <span className="text-xs font-bold uppercase tracking-widest">{footerData?.contact?.email || siteData.contact?.email || fallbackData.contact.email}</span>
                 )}
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex min-w-0 items-center gap-3">
                 <FiMapPin className="w-3 h-3 text-white flex-shrink-0" />
                 {footerData?.contact?.addressLink ? (
-                  <a href={footerData.contact.addressLink} className="text-xs font-bold uppercase tracking-widest text-white hover:text-[#CC2E2E] transition-colors flex items-center">
+                  <a href={footerData.contact.addressLink} className="flex min-w-0 items-center whitespace-normal break-words text-xs font-bold uppercase tracking-widest text-white transition-colors hover:text-[#CC2E2E]">
                     {footerData.contact.address}
                     <FiExternalLink className="w-3 h-3 ml-1 opacity-90 flex-shrink-0" />
                   </a>

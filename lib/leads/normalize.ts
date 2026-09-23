@@ -38,6 +38,7 @@ export interface NormalizedLead {
   search_location_country_code: string | null;
   has_design_files: boolean;
   uploaded_files_count: number;
+  attachments: string[] | null;
 }
 
 const NA = 'Not specified';
@@ -121,6 +122,13 @@ export function normalizeLead(raw: any, ctx?: { referrer?: string | null }): Nor
   const source = first(b.source, b.formSource) || 'website';
   const standSize = toNumber(first(b.standSize, b.stand_size, b.boothSize, b.booth_size));
 
+  // Collect attachments: prefer explicit array, then legacy single URL
+  let attachments: string[] | null = null;
+  if (Array.isArray(b.attachments) && b.attachments.length) attachments = b.attachments.filter((x: any) => typeof x === 'string' && x.trim()).slice(0, 20);
+  else if (Array.isArray(b.uploadedFiles) && b.uploadedFiles.length) attachments = b.uploadedFiles.filter((x: any) => typeof x === 'string').slice(0, 20);
+  else if (typeof b.attachments === 'string' && b.attachments.trim()) attachments = [b.attachments.trim()];
+  else if (typeof b.fileUrl === 'string' && b.fileUrl.trim()) attachments = [b.fileUrl.trim()];
+
   return {
     company_name: companyName || 'Not provided',
     contact_name: contactName,
@@ -149,8 +157,9 @@ export function normalizeLead(raw: any, ctx?: { referrer?: string | null }): Nor
     search_location_city: city !== NA ? city : null,
     search_location_country: country !== NA ? country : null,
     search_location_country_code: countryCode,
-    has_design_files: Boolean(b.hasDesign || b.has_design_files || b.hasDesignFiles),
-    uploaded_files_count: toNumber(first(b.uploadedFilesCount, b.uploaded_files_count)),
+    has_design_files: Boolean(b.hasDesign || b.has_design_files || b.hasDesignFiles || (attachments && attachments.length)),
+    uploaded_files_count: toNumber(first(b.uploadedFilesCount, b.uploaded_files_count, attachments?.length)),
+    attachments,
   };
 }
 

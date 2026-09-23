@@ -1621,3 +1621,15 @@ h6,
   min-height: 56px;
   font-size: clamp(1rem, 2.5vw, 1.125rem);
 }
+/* Lets a page's own sticky bottom CTA bar (e.g. the mobile quote bar on
+   location pages) lift the site-wide WhatsApp float button/bubble clear of
+   itself, instead of the two overlapping. A page toggles this by setting
+   `document.body.classList.add('has-sticky-bottom-cta')` and
+   `--sticky-bottom-cta-height` while its bar is visible, and undoing both
+   when it hides. See components/location-v2/PageAids.tsx (MobileCta). */
+body.has-sticky-bottom-cta #whatsapp-float-button {
+  bottom: calc(1.5rem + var(--sticky-bottom-cta-height, 4.5rem));
+}
+body.has-sticky-bottom-cta #whatsapp-chat-bubble {
+  bottom: calc(6rem + var(--sticky-bottom-cta-height, 4.5rem));
+}

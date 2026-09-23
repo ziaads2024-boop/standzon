@@ -84,7 +84,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         {!showPreview ? (
           <textarea
             className={cn(
-              'flex min-h-[80px] w-full rounded-md border border-gray-600 bg-gray-800/70 px-3 py-2 text-sm text-gray-100 ring-offset-background placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[120px] touch-enlarge',
+              'flex min-h-[80px] w-full rounded-none border border-[#E4E6E8] bg-white px-3 py-2 text-sm text-[#252525] ring-offset-background placeholder:text-[#9CA3AF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E03A3A]/30 focus-visible:border-[#E03A3A] focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 min-h-[120px] touch-enlarge',
               className
             )}
             ref={innerRef}
@@ -95,7 +95,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             {...props}
           />
         ) : (
-          <div className={cn('min-h-[80px] w-full rounded-md border border-gray-600 bg-gray-800/70 px-3 py-2 text-sm text-gray-100 prose max-w-none touch-enlarge', className)}
+          <div className={cn('min-h-[80px] w-full rounded-none border border-[#E4E6E8] bg-white px-3 py-2 text-sm text-[#252525] prose max-w-none touch-enlarge', className)}
                dangerouslySetInnerHTML={{ __html: getCurrentValue() }} />
         )}
       </div>

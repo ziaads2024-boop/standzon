@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,6 +10,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Quote, Send, CheckCircle, Users, Shield, Globe, MapPin, Star, ArrowRight, ArrowLeft, Building, Calendar, DollarSign, Upload, X, FileText, Image as ImageIcon } from 'lucide-react';
+import { fieldClass, selectContentClass, selectItemClass, FieldLabel, StepHeading } from '@/components/quoteFormShared';
+import { QuoteLocationFields, countryCodeFromName, resolveQuoteLocation } from '@/components/QuoteLocationFields';
+
+export { fieldClass, selectContentClass, selectItemClass, FieldLabel, StepHeading };
 
 interface PublicQuoteRequestProps {
   location?: string;
@@ -25,6 +29,8 @@ interface FormData {
   companyName: string;
   email: string;
   phone: string;
+  country: string;
+  city: string;
   exhibitionName: string;
   customExhibition: string;
   standSize: string;
@@ -40,9 +46,31 @@ interface UploadedFile {
   file: File;
   id: string;
   preview?: string;
+  status: 'uploading' | 'done' | 'error';
+  path?: string; // Supabase Storage path once uploaded — this is what actually reaches admin
 }
 
-export function PublicQuoteRequest({ 
+interface ExhibitionOption {
+  id?: string;
+  name: string;
+  start_date?: string | null;
+  end_date?: string | null;
+  venue?: string | null;
+}
+
+function exhibitionOptionLabel(exhibition: ExhibitionOption): string {
+  if (!exhibition.start_date) return exhibition.name;
+  const date = new Date(exhibition.start_date);
+  if (Number.isNaN(date.getTime())) return exhibition.name;
+  return `${exhibition.name} — ${new Intl.DateTimeFormat('en', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(date)}`;
+}
+
+export function PublicQuoteRequest({
   location,
   countryCode,
   cityName,
@@ -51,6 +79,11 @@ export function PublicQuoteRequest({
   buttonText = 'Get Free Quote',
   size = 'lg'
 }: PublicQuoteRequestProps) {
+  const pageLocation = useMemo(
+    () => resolveQuoteLocation({ location, countryCode, cityName }),
+    [location, countryCode, cityName],
+  );
+  const hasPageCountry = !!pageLocation.country;
   const [isOpen, setIsOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -62,6 +95,8 @@ export function PublicQuoteRequest({
     companyName: '',
     email: '',
     phone: '',
+    country: pageLocation.country,
+    city: pageLocation.city,
     exhibitionName: '',
     customExhibition: '',
     standSize: '',
@@ -76,64 +111,11 @@ export function PublicQuoteRequest({
 
   // Determine if we should use default styling or custom className
   const useCustomStyle = className && className.includes('bg-');
-  const buttonClassName = useCustomStyle 
-    ? className 
-    : `bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl ${className}`;
+  const buttonClassName = useCustomStyle
+    ? className
+    : `rounded-none bg-[#252525] text-white transition-colors duration-300 hover:bg-[#E03A3A] ${className}`;
 
-  // Get location-specific country code for exhibition filtering
-  const getLocationCountryCode = (location?: string, countryCode?: string) => {
-    if (countryCode) return countryCode;
-    if (!location) return 'US'; // Default
-    
-    const locationLower = location.toLowerCase();
-    if (locationLower.includes('dubai') || locationLower.includes('uae') || locationLower.includes('united arab emirates')) return 'AE';
-    if (locationLower.includes('india')) return 'IN';
-    if (locationLower.includes('germany') || locationLower.includes('berlin') || locationLower.includes('munich')) return 'DE';
-    if (locationLower.includes('france') || locationLower.includes('paris')) return 'FR';
-    if (locationLower.includes('uk') || locationLower.includes('london') || locationLower.includes('united kingdom')) return 'GB';
-    if (locationLower.includes('spain') || locationLower.includes('barcelona') || locationLower.includes('madrid')) return 'ES';
-    if (locationLower.includes('italy') || locationLower.includes('milan')) return 'IT';
-    if (locationLower.includes('netherlands') || locationLower.includes('amsterdam')) return 'NL';
-    if (locationLower.includes('switzerland') || locationLower.includes('geneva')) return 'CH';
-    if (locationLower.includes('singapore')) return 'SG';
-    if (locationLower.includes('china') || locationLower.includes('beijing')) return 'CN';
-    if (locationLower.includes('turkey') || locationLower.includes('istanbul')) return 'TR';
-    if (locationLower.includes('australia') || locationLower.includes('melbourne') || locationLower.includes('sydney')) return 'AU';
-    if (locationLower.includes('canada') || locationLower.includes('toronto')) return 'CA';
-    if (locationLower.includes('qatar') || locationLower.includes('doha')) return 'QA';
-    if (locationLower.includes('saudi') || locationLower.includes('riyadh') || locationLower.includes('jeddah')) return 'SA';
-    if (locationLower.includes('oman')) return 'OM';
-    if (locationLower.includes('bahrain')) return 'BH';
-    if (locationLower.includes('kuwait')) return 'KW';
-    
-    return 'US'; // Default fallback
-  };
-
-  const detectedCountryCode = getLocationCountryCode(location, countryCode);
-
-  // Country normalization helpers
-  const countryCodeToName: Record<string, string> = {
-    US: 'United States',
-    AE: 'United Arab Emirates',
-    GB: 'United Kingdom',
-    DE: 'Germany',
-    FR: 'France',
-    ES: 'Spain',
-    IT: 'Italy',
-    NL: 'Netherlands',
-    CH: 'Switzerland',
-    SG: 'Singapore',
-    CN: 'China',
-    TR: 'Turkey',
-    AU: 'Australia',
-    CA: 'Canada',
-    QA: 'Qatar',
-    SA: 'Saudi Arabia',
-    OM: 'Oman',
-    BH: 'Bahrain',
-    KW: 'Kuwait',
-    IN: 'India',
-  };
+  const detectedCountryCode = countryCodeFromName(formData.country) || pageLocation.countryCode;
 
   const normalize = (s: string) =>
     s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -160,7 +142,7 @@ export function PublicQuoteRequest({
       // First try aggregated endpoint
       const countriesRes = await fetch('/api/admin/builders?action=countries');
       const countriesJson = await countriesRes.json();
-      const targetName = (preferredCountryName || countryCodeToName[detectedCountryCode] || location || '').toString().trim();
+      const targetName = (preferredCountryName || pageLocation.country || location || '').toString().trim();
       const wantedA = targetName.toLowerCase();
       const wantedB = normalize(targetName);
       const aliasList = countryAliases[wantedB] || [wantedB];
@@ -191,99 +173,82 @@ export function PublicQuoteRequest({
     }
   }
   
-  // Query exhibitions from database based on location
-  // const exhibitionsFromDB = useQuery(api.exhibitions.getExhibitionsByCountry, { 
-  //   countryCode: detectedCountryCode 
-  // });
-  
-  // City-specific exhibitions if cityName is provided
-  // const cityExhibitionsFromDB = cityName
-  //   ? useQuery(api.exhibitions.getExhibitionsByCity as any, {
-  //       countryCode: detectedCountryCode,
-  //       cityName: cityName,
-  //     })
-  //   : null;
-  
-  // Replace Convex queries with Supabase implementation
-  const [exhibitionsFromDB, setExhibitionsFromDB] = useState<any[]>([]);
-  const [cityExhibitionsFromDB, setCityExhibitionsFromDB] = useState<any[] | null>(null);
-  
+  const [exhibitions, setExhibitions] = useState<ExhibitionOption[]>([]);
+  const [exhibitionStatus, setExhibitionStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
+
   useEffect(() => {
+    const countryName = formData.country.trim();
+    const cityValue = formData.city.trim();
+    setExhibitions([]);
+
+    if (!countryName || !cityValue) {
+      setExhibitionStatus('idle');
+      return;
+    }
+
+    const controller = new AbortController();
     const fetchExhibitions = async () => {
+      setExhibitionStatus('loading');
       try {
-        // Fetch country-specific exhibitions
-        const countryResponse = await fetch(`/api/exhibitions?countryCode=${detectedCountryCode}`);
-        if (countryResponse.ok) {
-          const countryData = await countryResponse.json();
-          setExhibitionsFromDB(countryData.data || []);
-        }
-        
-        // Fetch city-specific exhibitions if cityName is provided
-        if (cityName) {
-          const cityResponse = await fetch(`/api/exhibitions?countryCode=${detectedCountryCode}&cityName=${cityName}`);
-          if (cityResponse.ok) {
-            const cityData = await cityResponse.json();
-            setCityExhibitionsFromDB(cityData.data || []);
-          }
-        }
+        const params = new URLSearchParams({ country: countryName, city: cityValue });
+        const response = await fetch(`/api/exhibitions?${params.toString()}`, { signal: controller.signal });
+        const payload = await response.json();
+        if (!response.ok || !payload?.success) throw new Error(payload?.error || 'Failed to load exhibitions');
+        setExhibitions(Array.isArray(payload.data) ? payload.data : []);
+        setExhibitionStatus('ready');
       } catch (error) {
+        if (controller.signal.aborted) return;
         console.error('Error fetching exhibitions:', error);
+        setExhibitionStatus('error');
       }
     };
-    
-    fetchExhibitions();
-  }, [detectedCountryCode, cityName]);
-  
-  // Fallback exhibitions if database is empty or loading
-  const fallbackExhibitions = [
-    'CES Las Vegas',
-    'Mobile World Congress',
-    'Hannover Messe',
-    'GITEX Technology Week',
-    'Arab Health',
-    'India International Trade Fair',
-    'ITB Berlin',
-    'IFA Berlin',
-    'Maison&Objet Paris',
-    'Salone del Mobile',
-    'Other Exhibition'
-  ];
 
-  // Combine database exhibitions with fallback, prioritizing city-specific ones
-  const exhibitions = React.useMemo(() => {
-    let dbExhibitions: string[] = [];
-    
-    // Prioritize city-specific exhibitions
-    if (cityExhibitionsFromDB && cityExhibitionsFromDB.length > 0) {
-      dbExhibitions = cityExhibitionsFromDB.map((ex: any) => ex.name);
-      console.log(`🏙️ Found ${dbExhibitions.length} city-specific exhibitions for ${cityName}`);
-    } else if (exhibitionsFromDB && exhibitionsFromDB.length > 0) {
-      dbExhibitions = exhibitionsFromDB.map((ex: any) => ex.name);
-      console.log(`🌍 Found ${dbExhibitions.length} country-specific exhibitions for ${detectedCountryCode}`);
-    }
-    
-    // Add fallback exhibitions if no database exhibitions found
-    const finalExhibitions = dbExhibitions.length > 0 ? dbExhibitions : fallbackExhibitions;
-    
-    // Always ensure "Other Exhibition" is at the end
-    const filtered = finalExhibitions.filter(ex => ex !== 'Other Exhibition');
-    const result = [...filtered, 'Other Exhibition'];
-    
-    console.log(`📋 Final exhibitions list for ${cityName || location}:`, result);
-    return result;
-  }, [exhibitionsFromDB, cityExhibitionsFromDB, cityName, location, detectedCountryCode]);
+    fetchExhibitions();
+    return () => controller.abort();
+  }, [formData.country, formData.city]);
 
   const totalSteps = 4; // Added file upload step
 
   const handleInputChange = (field: keyof FormData, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((previous) => {
+      const next = { ...previous, [field]: value };
+      if ((field === 'country' || field === 'city') && value !== previous[field]) {
+        next.exhibitionName = '';
+        next.customExhibition = '';
+      }
+      return next;
+    });
+  };
+
+  // Uploads straight to Supabase Storage (via /api/leads/upload-attachment) as soon as a
+  // file is chosen — not deferred to submit — so a real, persistent storage path is ready
+  // by the time the lead is submitted. The old flow only ever tracked a File object in
+  // memory and sent a bare count to the API; nothing was actually saved anywhere durable,
+  // so "attached" files never reached admin.
+  const uploadFile = async (uploadedFile: UploadedFile) => {
+    try {
+      const fd = new FormData();
+      fd.append('file', uploadedFile.file);
+      const res = await fetch('/api/leads/upload-attachment', { method: 'POST', body: fd });
+      const result = await res.json();
+      if (!res.ok || !result?.success) throw new Error(result?.error || 'Upload failed');
+      setUploadedFiles(prev => prev.map(f => f.id === uploadedFile.id ? { ...f, status: 'done', path: result.data.path } : f));
+    } catch (error) {
+      console.error('❌ Attachment upload failed:', error);
+      setUploadedFiles(prev => prev.map(f => f.id === uploadedFile.id ? { ...f, status: 'error' } : f));
+      toast({
+        title: "Upload Failed",
+        description: `${uploadedFile.file.name} could not be uploaded. You can remove it and try again.`,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg', 'application/zip'];
     const maxSize = 10 * 1024 * 1024; // 10MB per file
-    
+
     const validFiles = files.filter(file => {
       if (!allowedTypes.includes(file.type)) {
         toast({
@@ -293,7 +258,7 @@ export function PublicQuoteRequest({
         });
         return false;
       }
-      
+
       if (file.size > maxSize) {
         toast({
           title: "File Too Large",
@@ -302,17 +267,19 @@ export function PublicQuoteRequest({
         });
         return false;
       }
-      
+
       return true;
     });
 
     const newFiles: UploadedFile[] = validFiles.map(file => ({
       file,
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined
+      preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
+      status: 'uploading',
     }));
 
     setUploadedFiles(prev => [...prev, ...newFiles]);
+    newFiles.forEach(uploadFile);
   };
 
   const removeFile = (fileId: string) => {
@@ -342,18 +309,47 @@ export function PublicQuoteRequest({
   const isStepValid = () => {
     switch (currentStep) {
       case 1:
-        return formData.companyName && formData.email;
+        return !!(formData.companyName && formData.email && formData.country && formData.city);
       case 2:
-        return formData.exhibitionName || formData.customExhibition;
+        return formData.exhibitionName === 'Other Exhibition'
+          ? !!formData.customExhibition.trim()
+          : !!formData.exhibitionName;
       case 3:
         return true; // Optional fields
       case 4:
         // Require user confirmation on final step; if they indicate they have a design,
-        // require at least one file uploaded
-        if (formData.hasDesign && uploadedFiles.length === 0) return false;
+        // require at least one file uploaded. Block submit while any file is still
+        // mid-upload so we never submit a lead whose attachment isn't saved yet.
+        if (formData.hasDesign && uploadedFiles.filter(f => f.status === 'done').length === 0) return false;
+        if (uploadedFiles.some(f => f.status === 'uploading')) return false;
         return !!formData.confirmDetails;
       default:
         return false;
+    }
+  };
+
+  // Surfaced next to the Next/Submit button whenever it's disabled, so "why can't I
+  // continue" has a visible answer instead of a silently inert button.
+  const stepValidationHint = (): string | null => {
+    if (isStepValid()) return null;
+    switch (currentStep) {
+      case 1: {
+        const missing = [
+          !formData.companyName && 'company name',
+          !formData.email && 'email',
+          !formData.city && 'city',
+        ].filter(Boolean);
+        return `Enter your ${missing.join(', ')} to continue.`;
+      }
+      case 2:
+        return 'Select an exhibition to continue.';
+      case 4:
+        if (uploadedFiles.some(f => f.status === 'uploading')) return 'Wait for your file(s) to finish uploading.';
+        if (formData.hasDesign && uploadedFiles.filter(f => f.status === 'done').length === 0) return 'Upload at least one file, or untick "I have existing designs".';
+        if (!formData.confirmDetails) return 'Confirm the details above to submit.';
+        return null;
+      default:
+        return null;
     }
   };
 
@@ -364,9 +360,11 @@ export function PublicQuoteRequest({
     try {
       console.log('🚀 Submitting unified quote request...', formData);
 
-      const finalExhibitionName = formData.exhibitionName === 'Other Exhibition' 
-        ? formData.customExhibition 
+      const finalExhibitionName = formData.exhibitionName === 'Other Exhibition'
+        ? formData.customExhibition
         : formData.exhibitionName;
+
+      const attachments = uploadedFiles.filter(f => f.status === 'done' && f.path).map(f => f.path as string);
 
       const leadData = {
         id: `lead_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -379,12 +377,14 @@ export function PublicQuoteRequest({
         budget: formData.budget,
         message: formData.message,
         hasDesign: formData.hasDesign,
-        uploadedFilesCount: uploadedFiles.length,
+        uploadedFilesCount: attachments.length,
+        attachments,
         builderId: builderId || 'public_request',
         builderName: 'Multiple Builders',
-        builderLocation: location || cityName || 'Global',
+        builderLocation: formData.city ? `${formData.city}, ${formData.country}` : (formData.country || location || cityName || 'Global'),
+        countryName: formData.country,
         countryCode: detectedCountryCode,
-        cityName: cityName,
+        cityName: formData.city || cityName,
         timestamp: new Date().toISOString(),
         status: 'new',
         source: 'unified_quote_request',
@@ -414,11 +414,10 @@ export function PublicQuoteRequest({
 
       // Also fetch country-level builder count to display full availability
       let countryCount: number | null = null;
-      countryCount = await fetchCountryBuilderCount();
+      countryCount = await fetchCountryBuilderCount(formData.country);
       if (countryCount !== null) setCountryBuildersCount(countryCount);
       setIsSuccess(true);
 
-      const locationText = cityName ? `${cityName}, ${location}` : location || 'your area';
       toast({
         title: "Quote Request Sent!",
         description: `You can expect quotations from ${countryCount ?? matched ?? 'multiple'} verified builders matching your criteria. They will contact you within 24 hours with competitive quotes.`,
@@ -445,6 +444,8 @@ export function PublicQuoteRequest({
       companyName: '',
       email: '',
       phone: '',
+      country: pageLocation.country,
+      city: pageLocation.city,
       exhibitionName: '',
       customExhibition: '',
       standSize: '',
@@ -486,23 +487,25 @@ export function PublicQuoteRequest({
           </Button>
         </DialogTrigger>
         
-        <DialogContent className="max-w-md">
-          <div className="text-center py-6">
-            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Request Sent Successfully!</h3>
-            <p className="text-gray-600 mb-6">
+        <DialogContent className="max-w-md rounded-none border border-[#E4E6E8] bg-white p-8 text-[#252525] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.35)] sm:rounded-none">
+          <div className="text-center">
+            <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center border border-[#E03A3A]/30 bg-[#E03A3A]/5">
+              <CheckCircle className="w-7 h-7 text-[#E03A3A]" />
+            </span>
+            <h3 className="mb-2 text-[1.3rem] font-light tracking-[-0.02em] text-[#252525]">Request sent successfully</h3>
+            <p className="mb-6 text-[15px] text-[#5B5C5D]">
               You can expect a quotation from {countryBuildersCount ?? matchingBuildersCount ?? 'multiple'} builders matching your requirements.
             </p>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <h4 className="font-semibold text-blue-900 mb-2">What happens next:</h4>
-              <ul className="text-sm text-blue-800 text-left space-y-1">
+            <div className="mb-6 border border-[#E4E6E8] bg-[#F5F6F7] p-4 text-left">
+              <h4 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#CC2E2E]">What happens next</h4>
+              <ul className="space-y-1 text-sm text-[#434444]">
                 <li>• Qualified builders will review your requirements</li>
                 <li>• You'll receive detailed quotations within 24-48 hours</li>
                 <li>• Compare proposals and choose the best fit</li>
                 <li>• All quotes are completely free with no obligation</li>
               </ul>
             </div>
-            <Button onClick={handleClose} className="w-full">
+            <Button onClick={handleClose} className="w-full rounded-none bg-[#252525] text-white hover:bg-[#E03A3A]">
               Close
             </Button>
           </div>
@@ -547,8 +550,8 @@ export function PublicQuoteRequest({
         </Button>
       </DialogTrigger>
       
-      <DialogContent 
-        className="max-w-lg max-h-[90vh] overflow-y-auto"
+      <DialogContent
+        className="max-w-lg max-h-[90vh] overflow-y-auto rounded-none border border-[#E4E6E8] bg-white p-7 text-[#252525] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.35)] backdrop-blur-0 sm:rounded-none"
         onInteractOutside={(e) => {
           // Prevent closing when clicking on Select dropdowns or other portaled elements
           const target = e.target as HTMLElement;
@@ -564,52 +567,68 @@ export function PublicQuoteRequest({
           }
         }}
       >
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Quote className="w-5 h-5 text-pink-600" />
-            Get Free Exhibition Stand Quotes
+        <DialogHeader className="space-y-1.5">
+          <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#CC2E2E]">
+            <Quote className="h-4 w-4" />
+            Get free exhibition stand quotes
+          </div>
+          <DialogTitle className="text-[1.4rem] font-light leading-tight tracking-[-0.02em] text-[#252525]">
+            {location ? (cityName ? `${cityName}, ${location}` : location) : 'Find your builder'}
           </DialogTitle>
-          <DialogDescription>
-            {location ? (
-              <>Connect with verified builders in <strong>{cityName ? `${cityName}, ${location}` : location}</strong> - Step {currentStep} of {totalSteps}</>
-            ) : (
-              `Connect with verified builders worldwide - Step ${currentStep} of ${totalSteps}`
-            )}
+          <DialogDescription className="text-[13px] text-[#5B5C5D]">
+            Free · no obligation · matched with verified builders
           </DialogDescription>
         </DialogHeader>
 
-        {/* Progress Bar */}
-        <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
-          <div 
-            className="bg-gradient-to-r from-pink-600 to-purple-600 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${(currentStep / totalSteps) * 100}%` }}
-          ></div>
+        {/* Progress — numbered steps, not just a bar, so it reads as a short process */}
+        <div className="mb-6 mt-2">
+          <div className="mb-2 hidden items-center justify-between text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9A9B9C] sm:flex">
+            {['Company', 'Exhibition', 'Budget', 'Files'].map((label, i) => (
+              <span key={label} className={i + 1 <= currentStep ? 'text-[#CC2E2E]' : undefined}>
+                {String(i + 1).padStart(2, '0')} {label}
+              </span>
+            ))}
+          </div>
+          <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9A9B9C] sm:hidden">
+            <span className="text-[#CC2E2E]">Step {currentStep} of {totalSteps}</span>
+          </div>
+          <div className="h-[3px] w-full bg-[#E4E6E8]">
+            <div
+              className="h-full bg-[#E03A3A] transition-all duration-300"
+              style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+            ></div>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Step 1: Company Information */}
           {currentStep === 1 && (
             <div className="space-y-4">
-              <div className="text-center mb-6">
-                <Building className="w-12 h-12 text-blue-600 mx-auto mb-2" />
-                <h3 className="text-lg font-semibold">Company Information</h3>
-                <p className="text-sm text-gray-600">Tell us about your company</p>
-              </div>
+              <StepHeading icon={Building} title="Company information" subtitle="Tell us about your company and where you need builders" />
+
+              <QuoteLocationFields
+                country={formData.country}
+                city={formData.city}
+                onCountryChange={(v) => handleInputChange('country', v)}
+                onCityChange={(v) => handleInputChange('city', v)}
+                hideCountry={hasPageCountry}
+                cityRequired
+              />
 
               <div>
-                <Label htmlFor="companyName">Company Name *</Label>
+                <FieldLabel htmlFor="companyName">Company name *</FieldLabel>
                 <Input
                   id="companyName"
                   value={formData.companyName}
                   onChange={(e) => handleInputChange('companyName', e.target.value)}
                   placeholder="Your company name"
                   required
-                  className="mt-1 min-h-[44px]"
+                  className={fieldClass}
                 />
               </div>
 
               <div>
-                <Label htmlFor="email">Email Address *</Label>
+                <FieldLabel htmlFor="email">Email address *</FieldLabel>
                 <Input
                   id="email"
                   type="email"
@@ -617,20 +636,20 @@ export function PublicQuoteRequest({
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   placeholder="your@email.com"
                   required
-                  className="mt-1 min-h-[44px]"
+                  className={fieldClass}
                 />
               </div>
 
               <div>
-                <Label htmlFor="phone">Phone Number (with country code) *</Label>
+                <FieldLabel htmlFor="phone">Phone number (with country code) *</FieldLabel>
                 <Input
                   id="phone"
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
                   placeholder="+1 234 567 8900"
-                  className="mt-1 min-h-[44px]"
+                  className={fieldClass}
                 />
-                <p className="text-xs text-gray-500 mt-1">Include country code (e.g., +1, +971, +44)</p>
+                <p className="mt-1 text-xs text-[#9A9B9C]">Include country code (e.g., +1, +971, +44)</p>
               </div>
             </div>
           )}
@@ -638,80 +657,90 @@ export function PublicQuoteRequest({
           {/* Step 2: Exhibition Details */}
           {currentStep === 2 && (
             <div className="space-y-4">
-              <div className="text-center mb-6">
-                <Calendar className="w-12 h-12 text-green-600 mx-auto mb-2" />
-                <h3 className="text-lg font-semibold">Exhibition Details</h3>
-                <p className="text-sm text-gray-600">
-                  {cityName ? `Exhibitions in ${cityName}` : location ? `Exhibitions in ${location}` : 'Which exhibition are you attending?'}
-                </p>
-              </div>
+              <StepHeading
+                icon={Calendar}
+                title="Exhibition details"
+                subtitle={formData.city ? `Future exhibitions in ${formData.city}` : 'Select a city first'}
+              />
 
               <div>
-                <Label htmlFor="exhibition">Exhibition *</Label>
-                <Select 
-                  value={formData.exhibitionName} 
+                <FieldLabel htmlFor="exhibition">Exhibition *</FieldLabel>
+                <Select
+                  value={formData.exhibitionName}
                   onValueChange={(value) => handleInputChange('exhibitionName', value)}
+                  disabled={!formData.city || exhibitionStatus === 'loading'}
                 >
-                  <SelectTrigger className="mt-1 min-h-[44px]">
-                    <SelectValue placeholder="Select exhibition" />
+                  <SelectTrigger className={fieldClass}>
+                    <SelectValue placeholder={exhibitionStatus === 'loading' ? 'Loading exhibitions…' : 'Select exhibition'} />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className={selectContentClass}>
                     {exhibitions.map((exhibition) => (
-                      <SelectItem key={exhibition} value={exhibition}>
-                        {exhibition}
+                      <SelectItem key={exhibition.id || `${exhibition.name}-${exhibition.start_date || ''}`} value={exhibition.name} className={selectItemClass}>
+                        {exhibitionOptionLabel(exhibition)}
                       </SelectItem>
                     ))}
+                    <SelectItem value="Other Exhibition" className={selectItemClass}>Other / not listed</SelectItem>
                   </SelectContent>
                 </Select>
+                {exhibitionStatus === 'ready' && exhibitions.length === 0 && (
+                  <p className="mt-1.5 text-xs text-[#5B5C5D]">
+                    No future listed exhibitions were found for {formData.city}. Choose “Other / not listed” to enter one manually.
+                  </p>
+                )}
+                {exhibitionStatus === 'error' && (
+                  <p className="mt-1.5 text-xs text-[#CC2E2E]">
+                    The exhibition calendar could not be loaded. You can still choose “Other / not listed”.
+                  </p>
+                )}
               </div>
 
               {formData.exhibitionName === 'Other Exhibition' && (
                 <div>
-                  <Label htmlFor="customExhibition">Exhibition Name *</Label>
+                  <FieldLabel htmlFor="customExhibition">Exhibition name *</FieldLabel>
                   <Input
                     id="customExhibition"
                     value={formData.customExhibition}
                     onChange={(e) => handleInputChange('customExhibition', e.target.value)}
                     placeholder="Enter exhibition name"
                     required
-                    className="mt-1 min-h-[44px]"
+                    className={fieldClass}
                   />
                 </div>
               )}
 
               <div>
-                <Label htmlFor="standSize">Stand Size</Label>
-                <Select 
-                  value={formData.standSize} 
+                <FieldLabel htmlFor="standSize">Stand size</FieldLabel>
+                <Select
+                  value={formData.standSize}
                   onValueChange={(value) => handleInputChange('standSize', value)}
                 >
-                  <SelectTrigger className="mt-1 min-h-[44px]">
+                  <SelectTrigger className={fieldClass}>
                     <SelectValue placeholder="Select stand size" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Small (3x3m)">Small (3x3m)</SelectItem>
-                    <SelectItem value="Medium (6x6m)">Medium (6x6m)</SelectItem>
-                    <SelectItem value="Large (9x9m)">Large (9x9m)</SelectItem>
-                    <SelectItem value="Extra Large (12x12m+)">Extra Large (12x12m+)</SelectItem>
-                    <SelectItem value="Custom Size">Custom Size</SelectItem>
+                  <SelectContent className={selectContentClass}>
+                    <SelectItem value="Small (3x3m)" className={selectItemClass}>Small (3x3m)</SelectItem>
+                    <SelectItem value="Medium (6x6m)" className={selectItemClass}>Medium (6x6m)</SelectItem>
+                    <SelectItem value="Large (9x9m)" className={selectItemClass}>Large (9x9m)</SelectItem>
+                    <SelectItem value="Extra Large (12x12m+)" className={selectItemClass}>Extra Large (12x12m+)</SelectItem>
+                    <SelectItem value="Custom Size" className={selectItemClass}>Custom Size</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <Label htmlFor="timeline">Timeline</Label>
-                <Select 
-                  value={formData.timeline} 
+                <FieldLabel htmlFor="timeline">Timeline</FieldLabel>
+                <Select
+                  value={formData.timeline}
                   onValueChange={(value) => handleInputChange('timeline', value)}
                 >
-                  <SelectTrigger className="mt-1 min-h-[44px]">
+                  <SelectTrigger className={fieldClass}>
                     <SelectValue placeholder="When do you need this?" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1-2 months">1-2 months</SelectItem>
-                    <SelectItem value="3-6 months">3-6 months</SelectItem>
-                    <SelectItem value="6+ months">6+ months</SelectItem>
-                    <SelectItem value="Just exploring">Just exploring</SelectItem>
+                  <SelectContent className={selectContentClass}>
+                    <SelectItem value="1-2 months" className={selectItemClass}>1-2 months</SelectItem>
+                    <SelectItem value="3-6 months" className={selectItemClass}>3-6 months</SelectItem>
+                    <SelectItem value="6+ months" className={selectItemClass}>6+ months</SelectItem>
+                    <SelectItem value="Just exploring" className={selectItemClass}>Just exploring</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -721,52 +750,49 @@ export function PublicQuoteRequest({
           {/* Step 3: Budget & Requirements */}
           {currentStep === 3 && (
             <div className="space-y-4">
-              <div className="text-center mb-6">
-                <DollarSign className="w-12 h-12 text-purple-600 mx-auto mb-2" />
-                <h3 className="text-lg font-semibold">Budget & Requirements</h3>
-                <p className="text-sm text-gray-600">Help us match you with the right builders</p>
-              </div>
+              <StepHeading icon={DollarSign} title="Budget & requirements" subtitle="Help us match you with the right builders" />
 
               <div>
-                <Label htmlFor="budget">Budget Range</Label>
-                <Select 
-                  value={formData.budget} 
+                <FieldLabel htmlFor="budget">Budget range</FieldLabel>
+                <Select
+                  value={formData.budget}
                   onValueChange={(value) => handleInputChange('budget', value)}
                 >
-                  <SelectTrigger className="mt-1 min-h-[44px]">
+                  <SelectTrigger className={fieldClass}>
                     <SelectValue placeholder="Select budget range" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="$10,000 - $25,000">$10,000 - $25,000</SelectItem>
-                    <SelectItem value="$25,000 - $50,000">$25,000 - $50,000</SelectItem>
-                    <SelectItem value="$50,000 - $100,000">$50,000 - $100,000</SelectItem>
-                    <SelectItem value="$100,000+">$100,000+</SelectItem>
-                    <SelectItem value="To be discussed">To be discussed</SelectItem>
+                  <SelectContent className={selectContentClass}>
+                    <SelectItem value="$10,000 - $25,000" className={selectItemClass}>$10,000 - $25,000</SelectItem>
+                    <SelectItem value="$25,000 - $50,000" className={selectItemClass}>$25,000 - $50,000</SelectItem>
+                    <SelectItem value="$50,000 - $100,000" className={selectItemClass}>$50,000 - $100,000</SelectItem>
+                    <SelectItem value="$100,000+" className={selectItemClass}>$100,000+</SelectItem>
+                    <SelectItem value="To be discussed" className={selectItemClass}>To be discussed</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <Label htmlFor="message">Additional Requirements</Label>
+                <FieldLabel htmlFor="message">Additional requirements</FieldLabel>
                 <Textarea
                   id="message"
                   value={formData.message}
                   onChange={(e) => handleInputChange('message', e.target.value)}
                   placeholder="Brief description of your needs, design preferences, or special requirements..."
                   rows={3}
-                  className="mt-1 min-h-[120px]"
+                  className={`${fieldClass} min-h-[120px]`}
                 />
               </div>
 
-              {/* Location Context */}
-              {location && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              {/* Location Context — reflects the Country/City the user picked on step 1,
+                  not just the page's own context, since they can change it there. */}
+              {formData.country && (
+                <div className="border border-[#E4E6E8] bg-[#F5F6F7] p-4">
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-blue-600" />
-                    <span className="font-medium text-blue-900">
-                      Builders in {cityName ? `${cityName}, ${location}` : location}
+                    <MapPin className="w-4 h-4 text-[#CC2E2E]" />
+                    <span className="font-medium text-[#252525]">
+                      Builders in {formData.city ? `${formData.city}, ${formData.country}` : formData.country}
                     </span>
-                    <Badge className="bg-green-100 text-green-800">
+                    <Badge className="rounded-none border border-[#E03A3A]/30 bg-[#E03A3A]/10 text-[#CC2E2E]">
                       <Star className="w-3 h-3 mr-1" />
                       Verified
                     </Badge>
@@ -779,89 +805,88 @@ export function PublicQuoteRequest({
           {/* Step 4: Design Files Upload */}
           {currentStep === 4 && (
             <div className="space-y-4">
-              <div className="text-center mb-6">
-                <Upload className="w-12 h-12 text-orange-600 mx-auto mb-2" />
-                <h3 className="text-lg font-semibold">Design Files (Optional)</h3>
-                <p className="text-sm text-gray-600">Upload your existing designs or reference materials</p>
-              </div>
+              <StepHeading icon={Upload} title="Design files (optional)" subtitle="Upload your existing designs or reference materials" />
 
               <div className="space-y-4">
-                <div className="flex items-start space-x-3">
+                <div className="flex items-start space-x-3 rounded-none border border-[#E4E6E8] bg-[#FFFEFE] p-3">
                   <input
                     type="checkbox"
                     id="hasDesign"
                     checked={formData.hasDesign}
                     onChange={(e) => handleInputChange('hasDesign', e.target.checked)}
-                    className="mt-1 rounded h-5 w-5"
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-[#E03A3A]"
                   />
-                  <Label htmlFor="hasDesign" className="text-base">I have existing designs or reference materials</Label>
+                  <Label htmlFor="hasDesign" className="cursor-pointer text-[13px] font-medium leading-snug text-[#252525]">I have existing designs or reference materials <span className="font-normal text-[#5B5C5D]">(tick to highlight — you can still upload below)</span></Label>
                 </div>
 
-                {formData.hasDesign && (
-                  <div className="space-y-4">
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                      <input
-                        type="file"
-                        id="fileUpload"
-                        multiple
-                        accept=".pdf,.jpg,.jpeg,.png,.zip"
-                        onChange={handleFileUpload}
-                        className="hidden"
-                      />
-                      <Label htmlFor="fileUpload" className="cursor-pointer">
-                        <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                        <p className="text-sm text-gray-600">
-                          Click to upload files or drag and drop
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          PDF, JPG, PNG, ZIP files up to 10MB each
-                        </p>
-                      </Label>
-                    </div>
-
-                    {uploadedFiles.length > 0 && (
-                      <div className="space-y-2">
-                        <Label>Uploaded Files ({uploadedFiles.length})</Label>
-                        {uploadedFiles.map((uploadedFile) => (
-                          <div key={uploadedFile.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                            <div className="flex items-center gap-2">
-                              {uploadedFile.file.type.startsWith('image/') ? (
-                                <ImageIcon className="w-4 h-4 text-blue-600" />
-                              ) : (
-                                <FileText className="w-4 h-4 text-red-600" />
-                              )}
-                              <span className="text-sm truncate max-w-[200px]">
-                                {uploadedFile.file.name}
-                              </span>
-                              <span className="text-xs text-gray-500">
-                                ({(uploadedFile.file.size / 1024 / 1024).toFixed(1)}MB)
-                              </span>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeFile(uploadedFile.id)}
-                            >
-                              <X className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                <div className="space-y-3">
+                  <div className="border-2 border-dashed border-slate-300 bg-white p-6 text-center transition-colors hover:border-[#E03A3A] hover:bg-[#FFFEFE]">
+                    <input
+                      type="file"
+                      id="fileUpload"
+                      multiple
+                      accept=".pdf,.jpg,.jpeg,.png,.zip"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                    <Label htmlFor="fileUpload" className="flex cursor-pointer flex-col items-center gap-1">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-none border border-[#E03A3A]/20 bg-[#E03A3A]/5">
+                        <Upload className="h-5 w-5 text-[#E03A3A]" />
+                      </span>
+                      <p className="text-sm font-semibold text-[#252525]">Click to upload files or drag and drop</p>
+                      <p className="text-xs font-medium text-[#5B5C5D]">PDF, JPG, PNG, ZIP up to 10MB each — saved with your request</p>
+                      <span className="mt-2 inline-flex items-center gap-2 rounded-none border border-[#252525] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-[#252525]">Choose Files</span>
+                    </Label>
                   </div>
-                )}
+
+                  {uploadedFiles.length > 0 ? (
+                    <div className="space-y-2">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#CC2E2E]">Uploaded files ({uploadedFiles.length}) — visible to admin</p>
+                      {uploadedFiles.map((uploadedFile) => (
+                        <div key={uploadedFile.id} className="flex items-center justify-between border border-[#E4E6E8] bg-[#F5F6F7] p-3">
+                          <div className="flex min-w-0 items-center gap-2">
+                            {uploadedFile.file.type.startsWith('image/') ? (
+                              <span className="flex h-8 w-8 shrink-0 items-center justify-center border border-[#E4E6E8] bg-white text-[#5B5C5D]"><ImageIcon className="h-4 w-4" /></span>
+                            ) : (
+                              <span className="flex h-8 w-8 shrink-0 items-center justify-center border border-[#E4E6E8] bg-white text-[#CC2E2E]"><FileText className="h-4 w-4" /></span>
+                            )}
+                            <div className="min-w-0">
+                              <p className="max-w-[200px] truncate text-sm font-medium text-[#252525]">{uploadedFile.file.name}</p>
+                              <p className="text-xs text-[#5B5C5D]">
+                                {(uploadedFile.file.size / 1024 / 1024).toFixed(1)}MB ·{' '}
+                                {uploadedFile.status === 'uploading' && <span className="text-[#9A9B9C]">Uploading…</span>}
+                                {uploadedFile.status === 'done' && <span className="text-[#1E7D3A]">Saved</span>}
+                                {uploadedFile.status === 'error' && <span className="text-[#CC2E2E]">Failed — remove and retry</span>}
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeFile(uploadedFile.id)}
+                            className="ml-2 shrink-0 rounded-none border border-transparent bg-white px-3 py-1.5 text-[#CC2E2E] hover:border-[#E4E6E8] hover:text-[#252525]"
+                          >
+                            <X className="mr-1 h-4 w-4" /> Remove
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-center text-xs font-medium uppercase tracking-[0.08em] text-[#9A9B9C]">No files yet — choose files above to see them here before submit</p>
+                  )}
+                </div>
 
                 {/* Required confirmation before submission */}
-                <div className="flex items-start gap-3 bg-yellow-50 border border-yellow-200 rounded-md p-4">
+                <div className="flex items-start gap-3 border border-[#E4E6E8] bg-[#F5F6F7] p-4">
                   <input
                     type="checkbox"
                     id="confirmDetails"
                     checked={formData.confirmDetails}
                     onChange={(e) => handleInputChange('confirmDetails', e.target.checked)}
-                    className="mt-1 rounded h-5 w-5"
+                    className="mt-1 h-4 w-4 accent-[#E03A3A]"
                   />
-                  <Label htmlFor="confirmDetails" className="text-base text-yellow-900">
+                  <Label htmlFor="confirmDetails" className="text-[14px] text-[#434444]">
                     I confirm the details provided are accurate and I'm ready to submit my quote request.
                   </Label>
                 </div>
@@ -870,34 +895,37 @@ export function PublicQuoteRequest({
           )}
 
           {/* Navigation Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
+          {stepValidationHint() && (
+            <p className="text-xs text-[#CC2E2E]" role="status">{stepValidationHint()}</p>
+          )}
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-[#E4E6E8]">
             <Button
               type="button"
               variant="outline"
               onClick={handleClose}
-              className="text-gray-600 hover:text-gray-900 min-h-[44px] w-full sm:w-auto"
+              className="min-h-[44px] w-full rounded-none border-[#252525]/25 text-[#252525] hover:border-[#252525] hover:bg-transparent hover:text-[#252525] sm:w-auto"
             >
               Cancel
             </Button>
-            
+
             {currentStep > 1 && (
               <Button
                 type="button"
                 variant="outline"
                 onClick={handlePrevious}
-                className="flex items-center gap-2 min-h-[44px] w-full sm:w-auto"
+                className="flex min-h-[44px] w-full items-center gap-2 rounded-none border-[#252525]/25 text-[#252525] hover:border-[#252525] hover:bg-transparent hover:text-[#252525] sm:w-auto"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Previous
               </Button>
             )}
-            
+
             {currentStep < totalSteps ? (
               <Button
                 type="button"
                 onClick={handleNext}
                 disabled={!isStepValid()}
-                className="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 min-h-[44px] w-full sm:w-auto"
+                className="min-h-[44px] w-full flex-1 rounded-none bg-[#252525] text-white hover:bg-[#E03A3A] sm:w-auto"
               >
                 Next Step
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -906,7 +934,7 @@ export function PublicQuoteRequest({
               <Button
                 type="submit"
                 disabled={isSubmitting || !isStepValid()}
-                className="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 min-h-[44px] w-full sm:w-auto"
+                className="min-h-[44px] w-full flex-1 rounded-none bg-[#252525] text-white hover:bg-[#E03A3A] sm:w-auto"
               >
                 {isSubmitting ? (
                   'Sending Request...'
@@ -926,6 +954,3 @@ export function PublicQuoteRequest({
 }
 
 export default PublicQuoteRequest;
-
-
-

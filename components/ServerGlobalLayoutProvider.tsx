@@ -37,7 +37,12 @@ export default function ServerGlobalLayoutProvider({ children }: ServerGlobalLay
     return <>{children}</>;
   }
 
-  const showBreadcrumbs = pathname !== '/' && !pathname?.startsWith('/debug');
+  // Location pages (/exhibition-stands/<country> or /<country>/<city>) carry their
+  // own breadcrumb inside the hero banner instead — a second, fixed one stacked
+  // under the site nav read as clutter (and doubled up in full-page screenshots).
+  // The bare /exhibition-stands directory index has no banner, so it keeps this one.
+  const isLocationPage = !!pathname && /^\/exhibition-stands\/[^/]+(\/[^/]+)?$/.test(pathname);
+  const showBreadcrumbs = pathname !== '/' && !pathname?.startsWith('/debug') && !isLocationPage;
   const breadcrumbs = pathname ? generateBreadcrumbs(pathname) : [];
 
   return (

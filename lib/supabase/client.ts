@@ -41,10 +41,14 @@ export function getSupabaseClient(): SupabaseClient {
 export function getSupabaseAdminClient(): SupabaseClient | null {
   if (!supabaseAdminInstance) {
     const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabaseServiceKey =
+      process.env.SUPABASE_SERVICE_ROLE_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY;
 
     if (supabaseUrl && supabaseServiceKey) {
-      supabaseAdminInstance = createClient(supabaseUrl, supabaseServiceKey);
+      supabaseAdminInstance = createClient(supabaseUrl, supabaseServiceKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
     } else {
       // Don't initialize admin client if keys are missing
       return null;

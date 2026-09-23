@@ -17,20 +17,22 @@ export async function GET(request: NextRequest) {
     }
     
     // Revalidate all country pages without city sections
-    const countriesWithoutCities = ['tw', 'hk', 'nz', 'vn', 'id', 'ph', 'in', 'au', 'es', 'ch', 'at', 'se', 'no', 'dk', 'fi'];
+    // (updated to the canonical full-name slugs — the old 2-letter-code pages
+    // these used to point at were retired in favor of 301s, see next.config.js)
+    const countriesWithoutCities = ['taiwan', 'hong-kong', 'new-zealand', 'vietnam', 'indonesia', 'philippines', 'india', 'australia', 'spain', 'switzerland', 'austria', 'sweden', 'norway', 'denmark', 'finland'];
     for (const country of countriesWithoutCities) {
       revalidatePath(`/exhibition-stands/${country}`);
     }
-    
+
     // Revalidate new city pages
     const newCityPages = [
-      '/exhibition-stands/jp/chiba',
-      '/exhibition-stands/be/kortrijk',
-      '/exhibition-stands/th/khon-kaen',
-      '/exhibition-stands/fr/strasbourg',
-      '/exhibition-stands/nl/maastricht',
-      '/exhibition-stands/nl/rotterdam',
-      '/exhibition-stands/nl/vijfhuizen'
+      '/exhibition-stands/japan/chiba',
+      '/exhibition-stands/belgium/kortrijk',
+      '/exhibition-stands/thailand/khon-kaen',
+      '/exhibition-stands/france/strasbourg',
+      '/exhibition-stands/netherlands/maastricht',
+      '/exhibition-stands/netherlands/rotterdam',
+      '/exhibition-stands/netherlands/vijfhuizen'
     ];
     for (const cityPage of newCityPages) {
       revalidatePath(cityPage);

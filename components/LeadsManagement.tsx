@@ -4,12 +4,9 @@ import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -44,43 +41,57 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
+import { Paperclip, FileText, Image as ImageIcon, Download, Loader2 } from "lucide-react";
 
+// Matches the ACTUAL `leads` table (supabase/migrations/001_initial_schema.sql +
+// 005_add_lead_context_fields.sql), not a guessed shape. The previous version of this
+// file used field names (event_name, budget_range) and lowercase status/priority values
+// that don't exist in the live schema — every row silently rendered blank in half these
+// columns, and status/priority filtering and badges never matched anything real.
 interface Lead {
   id: string;
   company_name: string;
   contact_name: string;
   contact_email: string;
-  contact_phone: string;
-  event_name: string;
-  event_date: string;
-  venue: string;
+  contact_phone: string | null;
+  trade_show_name: string;
+  event_date: string | null;
+  venue: string | null;
   city: string;
   country: string;
   stand_size: number;
-  budget_range: string;
+  budget: string;
   timeline: string;
-  stand_type: string;
-  status: 'new' | 'assigned' | 'contacted' | 'quoted' | 'converted' | 'lost' | 'cancelled';
-  priority: 'low' | 'medium' | 'high' | 'urgent';
+  special_requests: string | null;
+  lead_score: number;
+  estimated_value: number | null;
+  status: 'NEW' | 'ASSIGNED' | 'CONTACTED' | 'QUOTED' | 'CONVERTED' | 'LOST' | 'CANCELLED';
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
   source: string;
+  source_details: string | null;
+  targeted_builder_id: string | null;
+  targeted_builder_name: string | null;
+  is_general_inquiry: boolean;
+  search_location_city: string | null;
+  search_location_country: string | null;
+  has_design_files: boolean;
+  uploaded_files_count: number;
+  attachments: string[] | null;
   created_at: string;
   updated_at: string;
-  builder_id?: string;
-  notes?: string;
-  special_requests?: string;
-  needs_installation?: boolean;
-  needs_transportation?: boolean;
-  needs_storage?: boolean;
-  needs_av_equipment?: boolean;
-  needs_lighting?: boolean;
-  needs_furniture?: boolean;
-  needs_graphics?: boolean;
 }
 
 interface LeadsManagementProps {
   adminId: string;
   permissions: string[];
 }
+
+const STATUS_OPTIONS: Lead['status'][] = ['NEW', 'ASSIGNED', 'CONTACTED', 'QUOTED', 'CONVERTED', 'LOST', 'CANCELLED'];
+const PRIORITY_OPTIONS: Lead['priority'][] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
+
+const selectTriggerClass = "rounded-none border-[#E4E6E8] bg-white text-[#252525] focus:ring-[#E03A3A]/30";
+const selectContentClass = "rounded-none border-[#E4E6E8] bg-white text-[#252525]";
+const selectItemClass = "text-[#252525] focus:bg-[#F5F6F7] focus:text-[#252525]";
 
 export default function LeadsManagement({
   adminId,
@@ -102,6 +113,8 @@ export default function LeadsManagement({
   const [showFilters, setShowFilters] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState<Partial<Lead>>({});
+  const [attachmentUrls, setAttachmentUrls] = useState<Record<string, string>>({});
+  const [loadingAttachment, setLoadingAttachment] = useState<string | null>(null);
 
   useEffect(() => {
     fetchLeads();
@@ -109,6 +122,7 @@ export default function LeadsManagement({
 
   useEffect(() => {
     filterLeads();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [leads, searchTerm, statusFilter, priorityFilter, sourceFilter, countryFilter]);
 
   const fetchLeads = async () => {
@@ -132,24 +146,24 @@ export default function LeadsManagement({
 
   const filterLeads = () => {
     let filtered = [...leads];
-    
+
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(lead =>
         lead.company_name?.toLowerCase().includes(term) ||
         lead.contact_name?.toLowerCase().includes(term) ||
         lead.contact_email?.toLowerCase().includes(term) ||
-        lead.event_name?.toLowerCase().includes(term) ||
+        lead.trade_show_name?.toLowerCase().includes(term) ||
         lead.city?.toLowerCase().includes(term) ||
         lead.country?.toLowerCase().includes(term)
       );
     }
-    
+
     if (statusFilter !== "all") filtered = filtered.filter(l => l.status === statusFilter);
     if (priorityFilter !== "all") filtered = filtered.filter(l => l.priority === priorityFilter);
     if (sourceFilter !== "all") filtered = filtered.filter(l => l.source === sourceFilter);
     if (countryFilter !== "all") filtered = filtered.filter(l => l.country === countryFilter);
-    
+
     setFilteredLeads(filtered);
     setCurrentPage(1);
   };
@@ -162,7 +176,7 @@ export default function LeadsManagement({
         body: JSON.stringify({ status: newStatus })
       });
       if (!response.ok) throw new Error('Failed to update lead');
-      
+
       setLeads(prev => prev.map(l => l.id === leadId ? { ...l, status: newStatus } : l));
       toast({ title: "Success", description: `Lead status updated to ${newStatus}` });
     } catch (error) {
@@ -178,7 +192,7 @@ export default function LeadsManagement({
         body: JSON.stringify({ priority: newPriority })
       });
       if (!response.ok) throw new Error('Failed to update lead');
-      
+
       setLeads(prev => prev.map(l => l.id === leadId ? { ...l, priority: newPriority } : l));
       toast({ title: "Success", description: `Lead priority updated to ${newPriority}` });
     } catch (error) {
@@ -191,7 +205,7 @@ export default function LeadsManagement({
     try {
       const response = await fetch(`/api/admin/leads/${leadId}`, { method: 'DELETE' });
       if (!response.ok) throw new Error('Failed to delete lead');
-      
+
       setLeads(prev => prev.filter(l => l.id !== leadId));
       toast({ title: "Success", description: "Lead deleted successfully" });
     } catch (error) {
@@ -208,8 +222,8 @@ export default function LeadsManagement({
         body: JSON.stringify({ leadIds: Array.from(selectedLeads), status })
       });
       if (!response.ok) throw new Error('Failed to bulk update');
-      
-      setLeads(prev => prev.map(l => 
+
+      setLeads(prev => prev.map(l =>
         selectedLeads.has(l.id) ? { ...l, status } : l
       ));
       setSelectedLeads(new Set());
@@ -220,13 +234,14 @@ export default function LeadsManagement({
   };
 
   const exportToCSV = () => {
-    const headers = ['Company', 'Contact', 'Email', 'Phone', 'Event', 'City', 'Country', 'Status', 'Priority', 'Source', 'Created'];
+    const headers = ['Company', 'Contact', 'Email', 'Phone', 'Trade Show', 'City', 'Country', 'Status', 'Priority', 'Source', 'Files', 'Created'];
     const rows = filteredLeads.map(l => [
       l.company_name, l.contact_name, l.contact_email, l.contact_phone,
-      l.event_name, l.city, l.country, l.status, l.priority, l.source, l.created_at
+      l.trade_show_name, l.city, l.country, l.status, l.priority, l.source,
+      l.attachments?.length || 0, l.created_at
     ]);
-    
-    const csv = [headers.join(','), ...rows.map(r => r.map(v => `"${v || ''}"`).join(','))].join('\n');
+
+    const csv = [headers.join(','), ...rows.map(r => r.map(v => `"${v ?? ''}"`).join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -234,7 +249,7 @@ export default function LeadsManagement({
     a.download = `leads-export-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    
+
     toast({ title: "Exported", description: `${filteredLeads.length} leads exported to CSV` });
   };
 
@@ -256,6 +271,27 @@ export default function LeadsManagement({
     setSelectedLeads(newSet);
   };
 
+  // Attachments live in a private Supabase Storage bucket — mint a short-lived signed
+  // URL on demand rather than storing/exposing a permanent public link.
+  const openAttachment = async (path: string) => {
+    if (attachmentUrls[path]) {
+      window.open(attachmentUrls[path], '_blank', 'noopener,noreferrer');
+      return;
+    }
+    setLoadingAttachment(path);
+    try {
+      const res = await fetch(`/api/admin/leads/attachment-url?path=${encodeURIComponent(path)}`);
+      const result = await res.json();
+      if (!res.ok || !result?.success) throw new Error(result?.error || 'Could not open file');
+      setAttachmentUrls(prev => ({ ...prev, [path]: result.url }));
+      window.open(result.url, '_blank', 'noopener,noreferrer');
+    } catch (error) {
+      toast({ title: "Error", description: "Could not open attachment", variant: "destructive" });
+    } finally {
+      setLoadingAttachment(null);
+    }
+  };
+
   const countries = [...new Set(leads.map(l => l.country).filter(Boolean))];
   const sources = [...new Set(leads.map(l => l.source).filter(Boolean))];
 
@@ -263,42 +299,50 @@ export default function LeadsManagement({
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedLeads = filteredLeads.slice(startIndex, startIndex + itemsPerPage);
 
+  // Plain spans, not the shared <Badge> — its cva variants hardcode a background/text
+  // color of their own (built for the dark admin theme), which fights these semantic
+  // status colors via Tailwind class ordering rather than reliably losing to them.
+  //
+  // tailwind.config.ts deliberately collapses blue/purple/indigo/violet/pink/rose/
+  // fuchsia/sky/cyan/orange/red into the single brand red, and gray/slate/navy into
+  // ink — only red, amber and emerald render as genuinely distinct hues on this site.
+  // Color-coding below leans on shade/weight within those three instead of hue variety.
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
-      new: "bg-blue-100 text-blue-700 border-blue-200",
-      assigned: "bg-amber-100 text-amber-700 border-amber-200",
-      contacted: "bg-purple-100 text-purple-700 border-purple-200",
-      quoted: "bg-indigo-100 text-indigo-700 border-indigo-200",
-      converted: "bg-green-100 text-green-700 border-green-200",
-      lost: "bg-red-100 text-red-700 border-red-200",
-      cancelled: "bg-slate-100 text-slate-700 border-slate-200",
+      NEW: "bg-[#F5F6F7] text-[#252525] border-[#E4E6E8]",
+      ASSIGNED: "bg-amber-50 text-amber-700 border-amber-200",
+      CONTACTED: "bg-amber-100 text-amber-800 border-amber-300",
+      QUOTED: "bg-amber-200 text-amber-900 border-amber-300",
+      CONVERTED: "bg-emerald-50 text-emerald-700 border-emerald-300",
+      LOST: "bg-red-50 text-red-700 border-red-200",
+      CANCELLED: "bg-[#F5F6F7] text-[#9A9B9C] border-[#E4E6E8]",
     };
-    return <Badge className={styles[status] || "bg-slate-100"}>{status}</Badge>;
+    return <span className={`inline-block border px-2.5 py-0.5 text-xs font-semibold ${styles[status] || "bg-[#F5F6F7] text-[#9A9B9C] border-[#E4E6E8]"}`}>{status || 'NEW'}</span>;
   };
 
   const getPriorityBadge = (priority: string) => {
     const styles: Record<string, string> = {
-      low: "bg-slate-100 text-slate-600 border-slate-200",
-      medium: "bg-amber-100 text-amber-600 border-amber-200",
-      high: "bg-orange-100 text-orange-600 border-orange-200",
-      urgent: "bg-red-100 text-red-600 border-red-200",
+      LOW: "bg-[#F5F6F7] text-[#9A9B9C] border-[#E4E6E8]",
+      MEDIUM: "bg-amber-50 text-amber-600 border-amber-200",
+      HIGH: "bg-amber-100 text-amber-800 border-amber-300",
+      URGENT: "bg-red-50 text-red-700 border-red-200",
     };
-    return <Badge variant="outline" className={styles[priority] || ""}>{priority}</Badge>;
+    return <span className={`inline-block border px-2.5 py-0.5 text-xs font-semibold ${styles[priority] || "bg-[#F5F6F7] text-[#9A9B9C] border-[#E4E6E8]"}`}>{priority || 'MEDIUM'}</span>;
   };
 
   const stats = {
     total: leads.length,
-    new: leads.filter(l => l.status === 'new').length,
-    converted: leads.filter(l => l.status === 'converted').length,
-    avgScore: leads.length ? Math.round(leads.reduce((sum, l) => sum + (l.priority === 'urgent' ? 100 : l.priority === 'high' ? 75 : l.priority === 'medium' ? 50 : 25), 0) / leads.length) : 0
+    new: leads.filter(l => l.status === 'NEW').length,
+    converted: leads.filter(l => l.status === 'CONVERTED').length,
+    withFiles: leads.filter(l => (l.attachments?.length || 0) > 0).length,
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-slate-500">Loading leads...</p>
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#E03A3A] mx-auto"></div>
+          <p className="mt-4 text-[#5B5C5D]">Loading leads...</p>
         </div>
       </div>
     );
@@ -308,16 +352,14 @@ export default function LeadsManagement({
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Leads Management</h1>
-          <p className="text-slate-600">Manage incoming leads and track conversion pipeline</p>
+          <h1 className="text-2xl font-light tracking-[-0.02em] text-[#252525]">Leads Management</h1>
+          <p className="text-[#5B5C5D]">Manage incoming leads and track conversion pipeline</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="border-slate-300 text-slate-700" onClick={exportToCSV}>
-            <span className="material-symbols-outlined mr-2">download</span>
+          <Button variant="outline" className="rounded-none border-[#252525]/25 text-[#252525] hover:border-[#252525] hover:bg-transparent" onClick={exportToCSV}>
             Export CSV
           </Button>
-          <Button className="bg-blue-600 hover:bg-blue-700" onClick={fetchLeads}>
-            <span className="material-symbols-outlined mr-2">refresh</span>
+          <Button className="rounded-none bg-[#252525] text-white hover:bg-[#E03A3A]" onClick={fetchLeads}>
             Refresh
           </Button>
         </div>
@@ -325,107 +367,90 @@ export default function LeadsManagement({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { title: 'Total Leads', value: stats.total, icon: 'campaign', color: 'bg-blue-50 border-blue-200' },
-          { title: 'New Leads', value: stats.new, icon: 'fiber_new', color: 'bg-green-50 border-green-200' },
-          { title: 'Converted', value: stats.converted, icon: 'check_circle', color: 'bg-purple-50 border-purple-200' },
-          { title: 'Pipeline Health', value: `${stats.avgScore}%`, icon: 'trending_up', color: 'bg-amber-50 border-amber-200' },
+          { title: 'Total Leads', value: stats.total },
+          { title: 'New Leads', value: stats.new },
+          { title: 'Converted', value: stats.converted },
+          { title: 'With Attachments', value: stats.withFiles },
         ].map((stat, idx) => (
-          <Card key={idx} className={`${stat.color} border`}>
+          <Card key={idx} className="rounded-none border-[#E4E6E8]">
             <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-600">{stat.title}</p>
-                  <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
-                </div>
-                <span className="material-symbols-outlined text-3xl text-slate-400">{stat.icon}</span>
-              </div>
+              <p className="text-sm text-[#5B5C5D]">{stat.title}</p>
+              <p className="text-2xl font-light text-[#252525]">{stat.value}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <Card>
+      <Card className="rounded-none border-[#E4E6E8]">
         <CardHeader className="pb-3">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div className="flex-1 relative max-w-md">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
               <Input
                 placeholder="Search leads..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 border-slate-300"
+                className="rounded-none border-[#E4E6E8]"
               />
             </div>
             <div className="flex items-center gap-2">
               {selectedLeads.size > 0 && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="border-slate-300">
-                      <span className="material-symbols-outlined mr-2">stack</span>
+                    <Button variant="outline" className="rounded-none border-[#252525]/25">
                       Bulk ({selectedLeads.size})
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => bulkUpdateStatus('contacted')}>Mark as Contacted</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => bulkUpdateStatus('quoted')}>Mark as Quoted</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => bulkUpdateStatus('converted')}>Mark as Converted</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => bulkUpdateStatus('lost')}>Mark as Lost</DropdownMenuItem>
+                  <DropdownMenuContent className="rounded-none border-[#E4E6E8]">
+                    <DropdownMenuItem onClick={() => bulkUpdateStatus('CONTACTED')}>Mark as Contacted</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => bulkUpdateStatus('QUOTED')}>Mark as Quoted</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => bulkUpdateStatus('CONVERTED')}>Mark as Converted</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => bulkUpdateStatus('LOST')}>Mark as Lost</DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => setSelectedLeads(new Set())}>Clear Selection</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
-              <Button 
-                variant="outline" 
-                className="border-slate-300"
+              <Button
+                variant="outline"
+                className="rounded-none border-[#252525]/25"
                 onClick={() => setShowFilters(!showFilters)}
               >
-                <span className="material-symbols-outlined mr-2">filter_list</span>
                 Filters
                 {(statusFilter !== 'all' || priorityFilter !== 'all' || sourceFilter !== 'all' || countryFilter !== 'all') && (
-                  <Badge variant="secondary" className="ml-2 bg-blue-100 text-blue-700">Active</Badge>
+                  <span className="ml-2 inline-block bg-[#E03A3A]/10 px-2 py-0.5 text-xs font-semibold text-[#CC2E2E]">Active</span>
                 )}
               </Button>
             </div>
           </div>
-          
+
           {showFilters && (
-            <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t">
+            <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t border-[#E4E6E8]">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[160px]"><SelectValue placeholder="Status" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="new">New</SelectItem>
-                  <SelectItem value="assigned">Assigned</SelectItem>
-                  <SelectItem value="contacted">Contacted</SelectItem>
-                  <SelectItem value="quoted">Quoted</SelectItem>
-                  <SelectItem value="converted">Converted</SelectItem>
-                  <SelectItem value="lost">Lost</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                <SelectTrigger className={`w-[160px] ${selectTriggerClass}`}><SelectValue placeholder="Status" /></SelectTrigger>
+                <SelectContent className={selectContentClass}>
+                  <SelectItem value="all" className={selectItemClass}>All Statuses</SelectItem>
+                  {STATUS_OPTIONS.map(s => <SelectItem key={s} value={s} className={selectItemClass}>{s}</SelectItem>)}
                 </SelectContent>
               </Select>
               <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-                <SelectTrigger className="w-[160px]"><SelectValue placeholder="Priority" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Priorities</SelectItem>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="urgent">Urgent</SelectItem>
+                <SelectTrigger className={`w-[160px] ${selectTriggerClass}`}><SelectValue placeholder="Priority" /></SelectTrigger>
+                <SelectContent className={selectContentClass}>
+                  <SelectItem value="all" className={selectItemClass}>All Priorities</SelectItem>
+                  {PRIORITY_OPTIONS.map(p => <SelectItem key={p} value={p} className={selectItemClass}>{p}</SelectItem>)}
                 </SelectContent>
               </Select>
               <Select value={sourceFilter} onValueChange={setSourceFilter}>
-                <SelectTrigger className="w-[160px]"><SelectValue placeholder="Source" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Sources</SelectItem>
-                  {sources.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                <SelectTrigger className={`w-[160px] ${selectTriggerClass}`}><SelectValue placeholder="Source" /></SelectTrigger>
+                <SelectContent className={selectContentClass}>
+                  <SelectItem value="all" className={selectItemClass}>All Sources</SelectItem>
+                  {sources.map(s => <SelectItem key={s} value={s} className={selectItemClass}>{s}</SelectItem>)}
                 </SelectContent>
               </Select>
               <Select value={countryFilter} onValueChange={setCountryFilter}>
-                <SelectTrigger className="w-[160px]"><SelectValue placeholder="Country" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Countries</SelectItem>
-                  {countries.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                <SelectTrigger className={`w-[160px] ${selectTriggerClass}`}><SelectValue placeholder="Country" /></SelectTrigger>
+                <SelectContent className={selectContentClass}>
+                  <SelectItem value="all" className={selectItemClass}>All Countries</SelectItem>
+                  {countries.map(c => <SelectItem key={c} value={c} className={selectItemClass}>{c}</SelectItem>)}
                 </SelectContent>
               </Select>
               <Button variant="ghost" onClick={() => { setStatusFilter('all'); setPriorityFilter('all'); setSourceFilter('all'); setCountryFilter('all'); }}>
@@ -435,100 +460,97 @@ export default function LeadsManagement({
           )}
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border">
+          <div className="border border-[#E4E6E8]">
             <Table>
-<TableHeader>
-                  <TableRow className="bg-slate-100 hover:bg-slate-100">
-                    <TableHead className="w-12">
-                      <Checkbox 
-                        checked={selectedLeads.size === filteredLeads.length && filteredLeads.length > 0}
-                        onCheckedChange={toggleSelectAll}
-                      />
-                    </TableHead>
-                    <TableHead className="font-semibold text-slate-700">Company</TableHead>
-                    <TableHead className="font-semibold text-slate-700">Contact</TableHead>
-                    <TableHead className="font-semibold text-slate-700">Event</TableHead>
-                    <TableHead className="font-semibold text-slate-700">Location</TableHead>
-                    <TableHead className="font-semibold text-slate-700">Status</TableHead>
-                    <TableHead className="font-semibold text-slate-700">Priority</TableHead>
-                    <TableHead className="font-semibold text-slate-700">Source</TableHead>
-                    <TableHead className="font-semibold text-slate-700">Created</TableHead>
-                    <TableHead className="w-12"></TableHead>
-                  </TableRow>
-                </TableHeader>
+              <TableHeader>
+                <TableRow className="bg-[#F5F6F7] hover:bg-[#F5F6F7]">
+                  <TableHead className="w-12">
+                    <Checkbox
+                      checked={selectedLeads.size === filteredLeads.length && filteredLeads.length > 0}
+                      onCheckedChange={toggleSelectAll}
+                    />
+                  </TableHead>
+                  <TableHead className="font-semibold text-[#252525]">Company</TableHead>
+                  <TableHead className="font-semibold text-[#252525]">Contact</TableHead>
+                  <TableHead className="font-semibold text-[#252525]">Trade Show</TableHead>
+                  <TableHead className="font-semibold text-[#252525]">Location</TableHead>
+                  <TableHead className="font-semibold text-[#252525]">Status</TableHead>
+                  <TableHead className="font-semibold text-[#252525]">Priority</TableHead>
+                  <TableHead className="font-semibold text-[#252525]">Source</TableHead>
+                  <TableHead className="font-semibold text-[#252525]">Files</TableHead>
+                  <TableHead className="font-semibold text-[#252525]">Created</TableHead>
+                  <TableHead className="w-12"></TableHead>
+                </TableRow>
+              </TableHeader>
               <TableBody>
                 {paginatedLeads.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-8 text-slate-500">
+                    <TableCell colSpan={11} className="text-center py-8 text-[#9A9B9C]">
                       No leads found
                     </TableCell>
                   </TableRow>
                 ) : (
                   paginatedLeads.map((lead) => (
-                    <TableRow key={lead.id} className="hover:bg-slate-50">
+                    <TableRow key={lead.id} className="hover:bg-[#F5F6F7]">
                       <TableCell>
-                        <Checkbox 
+                        <Checkbox
                           checked={selectedLeads.has(lead.id)}
                           onCheckedChange={() => toggleSelect(lead.id)}
                         />
                       </TableCell>
                       <TableCell className="font-medium">
-                        <div>{lead.company_name}</div>
-                        <div className="text-xs text-slate-500">{lead.budget_range}</div>
+                        <div className="text-[#252525]">{lead.company_name}</div>
+                        <div className="text-xs text-[#9A9B9C]">{lead.budget}</div>
                       </TableCell>
                       <TableCell>
-                        <div>{lead.contact_name}</div>
-                        <div className="text-xs text-slate-500">{lead.contact_email}</div>
+                        <div className="text-[#252525]">{lead.contact_name}</div>
+                        <div className="text-xs text-[#9A9B9C]">{lead.contact_email}</div>
                       </TableCell>
                       <TableCell>
-                        <div>{lead.event_name}</div>
-                        <div className="text-xs text-slate-500">{lead.event_date}</div>
+                        <div className="text-[#252525]">{lead.trade_show_name}</div>
+                        <div className="text-xs text-[#9A9B9C]">{lead.timeline}</div>
                       </TableCell>
                       <TableCell>
-                        <div>{lead.city}</div>
-                        <div className="text-xs text-slate-500">{lead.country}</div>
+                        <div className="text-[#252525]">{lead.city}</div>
+                        <div className="text-xs text-[#9A9B9C]">{lead.country}</div>
                       </TableCell>
                       <TableCell>{getStatusBadge(lead.status)}</TableCell>
                       <TableCell>{getPriorityBadge(lead.priority)}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="bg-slate-50">{lead.source}</Badge>
+                        <span className="inline-block border border-[#E4E6E8] bg-[#F5F6F7] px-2 py-0.5 text-xs text-[#5B5C5D]">{lead.source}</span>
                       </TableCell>
-                      <TableCell className="text-sm text-slate-500">
+                      <TableCell>
+                        {lead.attachments && lead.attachments.length > 0 ? (
+                          <span className="inline-flex items-center gap-1 text-[#CC2E2E]">
+                            <Paperclip className="h-3.5 w-3.5" /> {lead.attachments.length}
+                          </span>
+                        ) : (
+                          <span className="text-[#D7D8D9]">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-sm text-[#9A9B9C]">
                         {lead.created_at ? new Date(lead.created_at).toLocaleDateString() : '-'}
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <span className="material-symbols-outlined">more_vert</span>
-                            </Button>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 rounded-none p-0">⋮</Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => setSelectedLead(lead)}>
-                              <span className="material-symbols-outlined mr-2">visibility</span>
-                              View Details
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => { setEditMode(true); setEditForm(lead); setSelectedLead(lead); }}>
-                              <span className="material-symbols-outlined mr-2">edit</span>
-                              Edit
-                            </DropdownMenuItem>
+                          <DropdownMenuContent align="end" className="rounded-none border-[#E4E6E8]">
+                            <DropdownMenuItem onClick={() => setSelectedLead(lead)}>View Details</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => { setEditMode(true); setEditForm(lead); setSelectedLead(lead); }}>Edit</DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuLabel>Change Status</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => updateLeadStatus(lead.id, 'contacted')}>Contacted</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateLeadStatus(lead.id, 'quoted')}>Quoted</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateLeadStatus(lead.id, 'converted')}>Converted</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateLeadStatus(lead.id, 'lost')}>Lost</DropdownMenuItem>
+                            {STATUS_OPTIONS.filter(s => s !== 'NEW').map(s => (
+                              <DropdownMenuItem key={s} onClick={() => updateLeadStatus(lead.id, s)}>{s}</DropdownMenuItem>
+                            ))}
                             <DropdownMenuSeparator />
                             <DropdownMenuLabel>Change Priority</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => updateLeadPriority(lead.id, 'low')}>Low</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateLeadPriority(lead.id, 'medium')}>Medium</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateLeadPriority(lead.id, 'high')}>High</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateLeadPriority(lead.id, 'urgent')}>Urgent</DropdownMenuItem>
+                            {PRIORITY_OPTIONS.map(p => (
+                              <DropdownMenuItem key={p} onClick={() => updateLeadPriority(lead.id, p)}>{p}</DropdownMenuItem>
+                            ))}
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => deleteLead(lead.id)} className="text-red-600">
-                              <span className="material-symbols-outlined mr-2">delete</span>
-                              Delete
-                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => deleteLead(lead.id)} className="text-red-600">Delete</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -540,24 +562,24 @@ export default function LeadsManagement({
           </div>
 
           <div className="flex items-center justify-between mt-4">
-            <div className="text-sm text-slate-500">
+            <div className="text-sm text-[#9A9B9C]">
               Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredLeads.length)} of {filteredLeads.length} leads
             </div>
             <div className="flex items-center gap-2">
               <Select value={String(itemsPerPage)} onValueChange={(v) => { setItemsPerPage(Number(v)); setCurrentPage(1); }}>
-                <SelectTrigger className="w-[100px]">
+                <SelectTrigger className={`w-[100px] ${selectTriggerClass}`}>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10 / page</SelectItem>
-                  <SelectItem value="25">25 / page</SelectItem>
-                  <SelectItem value="50">50 / page</SelectItem>
-                  <SelectItem value="100">100 / page</SelectItem>
+                <SelectContent className={selectContentClass}>
+                  <SelectItem value="10" className={selectItemClass}>10 / page</SelectItem>
+                  <SelectItem value="25" className={selectItemClass}>25 / page</SelectItem>
+                  <SelectItem value="50" className={selectItemClass}>50 / page</SelectItem>
+                  <SelectItem value="100" className={selectItemClass}>100 / page</SelectItem>
                 </SelectContent>
               </Select>
               <div className="flex gap-1">
-                <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(p - 1, 1))} disabled={currentPage === 1}>
-                  <span className="material-symbols-outlined">chevron_left</span>
+                <Button variant="outline" size="sm" className="rounded-none border-[#252525]/25" onClick={() => setCurrentPage(p => Math.max(p - 1, 1))} disabled={currentPage === 1}>
+                  ‹
                 </Button>
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                   let pageNum;
@@ -565,15 +587,15 @@ export default function LeadsManagement({
                   else if (currentPage <= 3) pageNum = i + 1;
                   else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
                   else pageNum = currentPage - 2 + i;
-                  
+
                   return (
-                    <Button key={pageNum} variant={currentPage === pageNum ? "default" : "outline"} size="sm" onClick={() => setCurrentPage(pageNum)}>
+                    <Button key={pageNum} size="sm" className={`rounded-none ${currentPage === pageNum ? "bg-[#252525] text-white hover:bg-[#252525]" : "border-[#252525]/25 bg-white text-[#252525]"}`} variant={currentPage === pageNum ? "default" : "outline"} onClick={() => setCurrentPage(pageNum)}>
                       {pageNum}
                     </Button>
                   );
                 })}
-                <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))} disabled={currentPage === totalPages}>
-                  <span className="material-symbols-outlined">chevron_right</span>
+                <Button variant="outline" size="sm" className="rounded-none border-[#252525]/25" onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))} disabled={currentPage === totalPages}>
+                  ›
                 </Button>
               </div>
             </div>
@@ -582,69 +604,60 @@ export default function LeadsManagement({
       </Card>
 
       <Dialog open={!!selectedLead} onOpenChange={() => { setSelectedLead(null); setEditMode(false); setEditForm({}); }}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-none border-[#E4E6E8]">
           <DialogHeader>
-            <DialogTitle>Lead Details</DialogTitle>
+            <DialogTitle className="text-[#252525]">Lead Details</DialogTitle>
             <DialogDescription>
               {selectedLead?.company_name}
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedLead && (
             <div className="space-y-4">
               {editMode ? (
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm font-medium">Company Name</label>
-                      <Input value={editForm.company_name || ''} onChange={(e) => setEditForm({...editForm, company_name: e.target.value})} />
+                      <label className="text-sm font-medium text-[#5B5C5D]">Company Name</label>
+                      <Input className="rounded-none border-[#E4E6E8]" value={editForm.company_name || ''} onChange={(e) => setEditForm({...editForm, company_name: e.target.value})} />
                     </div>
                     <div>
-                      <label className="text-sm font-medium">Contact Name</label>
-                      <Input value={editForm.contact_name || ''} onChange={(e) => setEditForm({...editForm, contact_name: e.target.value})} />
+                      <label className="text-sm font-medium text-[#5B5C5D]">Contact Name</label>
+                      <Input className="rounded-none border-[#E4E6E8]" value={editForm.contact_name || ''} onChange={(e) => setEditForm({...editForm, contact_name: e.target.value})} />
                     </div>
                     <div>
-                      <label className="text-sm font-medium">Email</label>
-                      <Input value={editForm.contact_email || ''} onChange={(e) => setEditForm({...editForm, contact_email: e.target.value})} />
+                      <label className="text-sm font-medium text-[#5B5C5D]">Email</label>
+                      <Input className="rounded-none border-[#E4E6E8]" value={editForm.contact_email || ''} onChange={(e) => setEditForm({...editForm, contact_email: e.target.value})} />
                     </div>
                     <div>
-                      <label className="text-sm font-medium">Phone</label>
-                      <Input value={editForm.contact_phone || ''} onChange={(e) => setEditForm({...editForm, contact_phone: e.target.value})} />
+                      <label className="text-sm font-medium text-[#5B5C5D]">Phone</label>
+                      <Input className="rounded-none border-[#E4E6E8]" value={editForm.contact_phone || ''} onChange={(e) => setEditForm({...editForm, contact_phone: e.target.value})} />
                     </div>
                     <div>
-                      <label className="text-sm font-medium">Status</label>
+                      <label className="text-sm font-medium text-[#5B5C5D]">Status</label>
                       <Select value={editForm.status} onValueChange={(v) => setEditForm({...editForm, status: v as Lead['status']})}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="new">New</SelectItem>
-                          <SelectItem value="assigned">Assigned</SelectItem>
-                          <SelectItem value="contacted">Contacted</SelectItem>
-                          <SelectItem value="quoted">Quoted</SelectItem>
-                          <SelectItem value="converted">Converted</SelectItem>
-                          <SelectItem value="lost">Lost</SelectItem>
-                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                        <SelectTrigger className={selectTriggerClass}><SelectValue /></SelectTrigger>
+                        <SelectContent className={selectContentClass}>
+                          {STATUS_OPTIONS.map(s => <SelectItem key={s} value={s} className={selectItemClass}>{s}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <label className="text-sm font-medium">Priority</label>
+                      <label className="text-sm font-medium text-[#5B5C5D]">Priority</label>
                       <Select value={editForm.priority} onValueChange={(v) => setEditForm({...editForm, priority: v as Lead['priority']})}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
-                          <SelectItem value="urgent">Urgent</SelectItem>
+                        <SelectTrigger className={selectTriggerClass}><SelectValue /></SelectTrigger>
+                        <SelectContent className={selectContentClass}>
+                          {PRIORITY_OPTIONS.map(p => <SelectItem key={p} value={p} className={selectItemClass}>{p}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
                   <div>
-                    <label className="text-sm font-medium">Notes</label>
-                    <Textarea value={editForm.notes || ''} onChange={(e) => setEditForm({...editForm, notes: e.target.value})} rows={3} />
+                    <label className="text-sm font-medium text-[#5B5C5D]">Special Requests</label>
+                    <Textarea className="rounded-none border-[#E4E6E8]" value={editForm.special_requests || ''} onChange={(e) => setEditForm({...editForm, special_requests: e.target.value})} rows={3} />
                   </div>
                   <div className="flex gap-2">
-                    <Button onClick={async () => {
+                    <Button className="rounded-none bg-[#252525] text-white hover:bg-[#E03A3A]" onClick={async () => {
                       try {
                         const response = await fetch(`/api/admin/leads/${selectedLead.id}`, {
                           method: 'PATCH',
@@ -659,91 +672,134 @@ export default function LeadsManagement({
                         toast({ title: 'Error', description: 'Failed to update lead', variant: 'destructive' });
                       }
                     }}>Save Changes</Button>
-                    <Button variant="outline" onClick={() => setEditMode(false)}>Cancel</Button>
+                    <Button variant="outline" className="rounded-none border-[#252525]/25" onClick={() => setEditMode(false)}>Cancel</Button>
                   </div>
                 </div>
               ) : (
                 <>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-sm text-slate-500">Company</p>
-                      <p className="font-medium">{selectedLead.company_name}</p>
+                      <p className="text-sm text-[#9A9B9C]">Company</p>
+                      <p className="font-medium text-[#252525]">{selectedLead.company_name}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-slate-500">Contact</p>
-                      <p className="font-medium">{selectedLead.contact_name}</p>
+                      <p className="text-sm text-[#9A9B9C]">Contact</p>
+                      <p className="font-medium text-[#252525]">{selectedLead.contact_name}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-slate-500">Email</p>
-                      <p className="font-medium">{selectedLead.contact_email}</p>
+                      <p className="text-sm text-[#9A9B9C]">Email</p>
+                      <p className="font-medium text-[#252525]">{selectedLead.contact_email}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-slate-500">Phone</p>
-                      <p className="font-medium">{selectedLead.contact_phone}</p>
+                      <p className="text-sm text-[#9A9B9C]">Phone</p>
+                      <p className="font-medium text-[#252525]">{selectedLead.contact_phone || '—'}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-slate-500">Event</p>
-                      <p className="font-medium">{selectedLead.event_name}</p>
+                      <p className="text-sm text-[#9A9B9C]">Trade Show</p>
+                      <p className="font-medium text-[#252525]">{selectedLead.trade_show_name}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-slate-500">Event Date</p>
-                      <p className="font-medium">{selectedLead.event_date}</p>
+                      <p className="text-sm text-[#9A9B9C]">Venue</p>
+                      <p className="font-medium text-[#252525]">{selectedLead.venue || '—'}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-slate-500">Venue</p>
-                      <p className="font-medium">{selectedLead.venue}</p>
+                      <p className="text-sm text-[#9A9B9C]">Location</p>
+                      <p className="font-medium text-[#252525]">{selectedLead.city}, {selectedLead.country}</p>
+                    </div>
+                    {(selectedLead.search_location_city || selectedLead.search_location_country) && (
+                      <div>
+                        <p className="text-sm text-[#9A9B9C]">Searching for builders in</p>
+                        <p className="font-medium text-[#252525]">{[selectedLead.search_location_city, selectedLead.search_location_country].filter(Boolean).join(', ')}</p>
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-sm text-[#9A9B9C]">Stand Size</p>
+                      <p className="font-medium text-[#252525]">{selectedLead.stand_size ? `${selectedLead.stand_size} sq m` : '—'}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-slate-500">Location</p>
-                      <p className="font-medium">{selectedLead.city}, {selectedLead.country}</p>
+                      <p className="text-sm text-[#9A9B9C]">Budget</p>
+                      <p className="font-medium text-[#252525]">{selectedLead.budget}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-slate-500">Stand Size</p>
-                      <p className="font-medium">{selectedLead.stand_size} sq ft</p>
+                      <p className="text-sm text-[#9A9B9C]">Timeline</p>
+                      <p className="font-medium text-[#252525]">{selectedLead.timeline}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-slate-500">Budget</p>
-                      <p className="font-medium">{selectedLead.budget_range}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-slate-500">Status</p>
+                      <p className="text-sm text-[#9A9B9C]">Status</p>
                       {getStatusBadge(selectedLead.status)}
                     </div>
                     <div>
-                      <p className="text-sm text-slate-500">Priority</p>
+                      <p className="text-sm text-[#9A9B9C]">Priority</p>
                       {getPriorityBadge(selectedLead.priority)}
                     </div>
                     <div>
-                      <p className="text-sm text-slate-500">Source</p>
-                      <p className="font-medium">{selectedLead.source}</p>
+                      <p className="text-sm text-[#9A9B9C]">Source</p>
+                      <p className="font-medium text-[#252525]">{selectedLead.source}{selectedLead.source_details ? ` — ${selectedLead.source_details}` : ''}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-slate-500">Timeline</p>
-                      <p className="font-medium">{selectedLead.timeline}</p>
+                      <p className="text-sm text-[#9A9B9C]">Lead Type</p>
+                      <p className="font-medium text-[#252525]">{selectedLead.is_general_inquiry ? 'General inquiry' : (selectedLead.targeted_builder_name || 'Builder-specific')}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-slate-500">Created</p>
-                      <p className="font-medium">{selectedLead.created_at ? new Date(selectedLead.created_at).toLocaleString() : '-'}</p>
+                      <p className="text-sm text-[#9A9B9C]">Estimated Value</p>
+                      <p className="font-medium text-[#252525]">{selectedLead.estimated_value ? `$${selectedLead.estimated_value.toLocaleString()}` : '—'}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-slate-500">Updated</p>
-                      <p className="font-medium">{selectedLead.updated_at ? new Date(selectedLead.updated_at).toLocaleString() : '-'}</p>
+                      <p className="text-sm text-[#9A9B9C]">Lead Score</p>
+                      <p className="font-medium text-[#252525]">{selectedLead.lead_score ?? '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-[#9A9B9C]">Created</p>
+                      <p className="font-medium text-[#252525]">{selectedLead.created_at ? new Date(selectedLead.created_at).toLocaleString() : '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-[#9A9B9C]">Updated</p>
+                      <p className="font-medium text-[#252525]">{selectedLead.updated_at ? new Date(selectedLead.updated_at).toLocaleString() : '-'}</p>
                     </div>
                   </div>
-                  {selectedLead.notes && (
-                    <div>
-                      <p className="text-sm text-slate-500">Notes</p>
-                      <p className="mt-1 p-3 bg-slate-50 rounded">{selectedLead.notes}</p>
-                    </div>
-                  )}
+
                   {selectedLead.special_requests && (
                     <div>
-                      <p className="text-sm text-slate-500">Special Requests</p>
-                      <p className="mt-1 p-3 bg-slate-50 rounded">{selectedLead.special_requests}</p>
+                      <p className="text-sm text-[#9A9B9C]">Special Requests / Message</p>
+                      <p className="mt-1 border border-[#E4E6E8] bg-[#F5F6F7] p-3 text-[#434444]">{selectedLead.special_requests}</p>
                     </div>
                   )}
-                  <Button variant="outline" onClick={() => setEditMode(true)} className="w-full">
-                    <span className="material-symbols-outlined mr-2">edit</span>
+
+                  {/* Files the person attached during submission — fetched via a short-lived
+                      signed URL since the storage bucket is private. */}
+                  <div>
+                    <p className="mb-1 text-sm text-[#9A9B9C]">Attached Files {selectedLead.attachments?.length ? `(${selectedLead.attachments.length})` : ''}</p>
+                    {selectedLead.attachments && selectedLead.attachments.length > 0 ? (
+                      <div className="space-y-2">
+                        {selectedLead.attachments.map((path) => {
+                          const name = path.split('/').pop() || path;
+                          const isImage = /\.(jpe?g|png|gif|webp)$/i.test(name);
+                          const loading = loadingAttachment === path;
+                          return (
+                            <button
+                              key={path}
+                              type="button"
+                              onClick={() => openAttachment(path)}
+                              disabled={loading}
+                              className="flex w-full items-center justify-between border border-[#E4E6E8] bg-white p-3 text-left transition-colors hover:border-[#E03A3A]/40 hover:bg-[#F5F6F7] disabled:opacity-60"
+                            >
+                              <span className="flex min-w-0 items-center gap-2">
+                                {isImage ? <ImageIcon className="h-4 w-4 shrink-0 text-[#5B5C5D]" /> : <FileText className="h-4 w-4 shrink-0 text-[#CC2E2E]" />}
+                                <span className="truncate text-sm text-[#252525]">{name}</span>
+                              </span>
+                              {loading ? <Loader2 className="h-4 w-4 shrink-0 animate-spin text-[#9A9B9C]" /> : <Download className="h-4 w-4 shrink-0 text-[#9A9B9C]" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="border border-dashed border-[#E4E6E8] bg-[#F5F6F7] p-3 text-sm text-[#9A9B9C]">
+                        {selectedLead.has_design_files ? 'Marked as having design files, but none were saved with this request.' : 'No files attached.'}
+                      </p>
+                    )}
+                  </div>
+
+                  <Button variant="outline" className="w-full rounded-none border-[#252525]/25" onClick={() => setEditMode(true)}>
                     Edit Lead
                   </Button>
                 </>

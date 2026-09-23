@@ -654,15 +654,15 @@ export default function UsersManagement({
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Users Management</h1>
-          <p className="text-gray-400">Manage platform users and their permissions</p>
+          <h1 className="text-2xl font-light tracking-[-0.02em] text-[#252525]">Users Management</h1>
+          <p className="text-[13px] text-[#5B5C5D]">Manage platform users and their permissions — modern light layout, fully visible</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-gray-100">
+          <Button variant="outline" className="rounded-none border-[#E4E6E8] bg-white text-[#252525] hover:bg-[#F5F6F7]">
             <Download className="w-4 h-4 mr-2" />
             Export
           </Button>
-          <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
+          <Button className="rounded-none bg-[#E03A3A] text-white hover:bg-[#252525]">
             <UserPlus className="w-4 h-4 mr-2" />
             Add User
           </Button>
@@ -670,7 +670,7 @@ export default function UsersManagement({
       </div>
 
       {/* Filters and Search */}
-      <Card className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm border border-gray-700">
+      <Card className="rounded-none border border-[#E4E6E8] bg-white shadow-sm">
         <CardContent className="p-4">
           <div className="flex flex-col md:flex-row md:items-center gap-4">
             <div className="flex-1">
@@ -680,16 +680,16 @@ export default function UsersManagement({
                   placeholder="Search users..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-gray-800/50 border-gray-700 text-white"
+                  className="pl-10 rounded-none border-[#E4E6E8] bg-white text-[#252525]"
                 />
               </div>
             </div>
             <div className="flex gap-3">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[180px] bg-gray-800/50 border-gray-700 text-white">
+                <SelectTrigger className="w-[180px] rounded-none border-[#E4E6E8] bg-white text-[#252525]">
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800/90 border-gray-700 text-white">
+                <SelectContent className="rounded-none border-[#E4E6E8] bg-white text-[#252525]">
                   <SelectItem value="all">All Statuses</SelectItem>
                   <SelectItem value="ACTIVE">Active</SelectItem>
                   <SelectItem value="PENDING">Pending</SelectItem>
@@ -698,10 +698,10 @@ export default function UsersManagement({
                 </SelectContent>
               </Select>
               <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger className="w-[180px] bg-gray-800/50 border-gray-700 text-white">
+                <SelectTrigger className="w-[180px] rounded-none border-[#E4E6E8] bg-white text-[#252525]">
                   <SelectValue placeholder="Filter by role" />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800/90 border-gray-700 text-white">
+                <SelectContent className="rounded-none border-[#E4E6E8] bg-white text-[#252525]">
                   <SelectItem value="all">All Roles</SelectItem>
                   <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
                   <SelectItem value="TENANT_ADMIN">Tenant Admin</SelectItem>
@@ -724,15 +724,15 @@ export default function UsersManagement({
         ].map((stat, index) => (
           <Card 
             key={index} 
-            className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm border border-gray-700 overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-1"
+            className="rounded-none border border-[#E4E6E8] bg-white shadow-sm hover:shadow-md transition-shadow"
           >
             <CardHeader className="p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-400">{stat.title}</p>
-                  <p className="text-2xl font-bold text-white mt-1">{stat.value}</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#5B5C5D]">{stat.title}</p>
+                  <p className="text-2xl font-light tracking-[-0.02em] text-[#252525] mt-1">{stat.value}</p>
                 </div>
-                <div className="p-3 rounded-xl bg-gray-700/50 text-white shadow-lg">
+                <div className="p-3 rounded-none border border-[#E4E6E8] bg-[#F5F6F7] text-[#CC2E2E]">
                   {stat.icon}
                 </div>
               </div>
@@ -742,10 +742,10 @@ export default function UsersManagement({
       </div>
 
       {/* Users Table */}
-      <Card className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm border border-gray-700">
+      <Card className="rounded-none border border-[#E4E6E8] bg-white shadow-sm">
         <CardHeader>
-          <CardTitle className="text-white">User Directory</CardTitle>
-          <CardDescription className="text-gray-400">
+          <CardTitle className="text-[#252525]">User Directory</CardTitle>
+          <CardDescription className="text-[#5B5C5D]">
             {filteredUsers.length} users found
           </CardDescription>
         </CardHeader>
@@ -753,21 +753,21 @@ export default function UsersManagement({
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="border-gray-700 hover:bg-transparent">
-                  <TableHead className="text-gray-300">User</TableHead>
-                  <TableHead className="text-gray-300">Email</TableHead>
-                  <TableHead className="text-gray-300">Tenant</TableHead>
-                  <TableHead className="text-gray-300">Role</TableHead>
-                  <TableHead className="text-gray-300">Status</TableHead>
-                  <TableHead className="text-gray-300">Last Login</TableHead>
-                  <TableHead className="text-gray-300">Profile</TableHead>
-                  <TableHead className="text-gray-300">Actions</TableHead>
+                <TableRow className="border-[#E4E6E8] bg-[#F5F6F7] hover:bg-[#F5F6F7]">
+                  <TableHead className="font-semibold uppercase tracking-[0.08em] text-[11px] text-[#5B5C5D]">User</TableHead>
+                  <TableHead className="font-semibold uppercase tracking-[0.08em] text-[11px] text-[#5B5C5D]">Email</TableHead>
+                  <TableHead className="font-semibold uppercase tracking-[0.08em] text-[11px] text-[#5B5C5D]">Tenant</TableHead>
+                  <TableHead className="font-semibold uppercase tracking-[0.08em] text-[11px] text-[#5B5C5D]">Role</TableHead>
+                  <TableHead className="font-semibold uppercase tracking-[0.08em] text-[11px] text-[#5B5C5D]">Status</TableHead>
+                  <TableHead className="font-semibold uppercase tracking-[0.08em] text-[11px] text-[#5B5C5D]">Last Login</TableHead>
+                  <TableHead className="font-semibold uppercase tracking-[0.08em] text-[11px] text-[#5B5C5D]">Profile</TableHead>
+                  <TableHead className="font-semibold uppercase tracking-[0.08em] text-[11px] text-[#5B5C5D]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginatedUsers.map((user) => (
-                  <TableRow key={user.id} className="border-gray-700 hover:bg-gray-800/50">
-                    <TableCell className="font-medium text-white">
+                  <TableRow key={user.id} className="border-[#E4E6E8] hover:bg-[#F5F6F7]/70">
+                    <TableCell className="font-medium text-[#252525]">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
                           <AvatarImage src="/placeholder-avatar.jpg" alt={user.name} />
@@ -779,15 +779,15 @@ export default function UsersManagement({
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-gray-300">{user.email}</TableCell>
-                    <TableCell className="text-gray-300">{user.tenantName || 'N/A'}</TableCell>
+                    <TableCell className="font-semibold uppercase tracking-[0.08em] text-[11px] text-[#5B5C5D]">{user.email}</TableCell>
+                    <TableCell className="font-semibold uppercase tracking-[0.08em] text-[11px] text-[#5B5C5D]">{user.tenantName || 'N/A'}</TableCell>
                     <TableCell>
                       {getRoleBadge(user.role)}
                     </TableCell>
                     <TableCell>
                       {getStatusBadge(user.status)}
                     </TableCell>
-                    <TableCell className="text-gray-300">
+                    <TableCell className="font-semibold uppercase tracking-[0.08em] text-[11px] text-[#5B5C5D]">
                       {new Date(user.lastLogin).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
@@ -803,7 +803,7 @@ export default function UsersManagement({
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent className="bg-gray-800/90 border-gray-700 text-white">
+                        <DropdownMenuContent className="rounded-none border-[#E4E6E8] bg-white text-[#252525]">
                           <DropdownMenuItem 
                             onClick={() => setSelectedUser(user)}
                             className="cursor-pointer"
@@ -835,7 +835,7 @@ export default function UsersManagement({
 
           {/* Pagination */}
           <div className="flex items-center justify-between mt-6">
-            <div className="text-sm text-gray-400">
+            <div className="text-xs font-medium uppercase tracking-[0.08em] text-[#9A9B9C]">
               Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredUsers.length)} of {filteredUsers.length} users
             </div>
             <div className="flex items-center gap-2">
@@ -844,7 +844,7 @@ export default function UsersManagement({
                 size="sm"
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-gray-100"
+                className="rounded-none border-[#E4E6E8] bg-white text-[#252525] hover:bg-[#F5F6F7]"
               >
                 Previous
               </Button>
@@ -883,7 +883,7 @@ export default function UsersManagement({
                 size="sm"
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-gray-100"
+                className="rounded-none border-[#E4E6E8] bg-white text-[#252525] hover:bg-[#F5F6F7]"
               >
                 Next
               </Button>
@@ -895,96 +895,96 @@ export default function UsersManagement({
       {/* User Detail Modal */}
       {selectedUser && (
         <Dialog open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-gray-900 border-gray-700">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-none border border-[#E4E6E8] bg-white text-[#252525]">
             <DialogHeader>
-              <DialogTitle className="text-white">User Details</DialogTitle>
-              <DialogDescription className="text-gray-400">
+              <DialogTitle className="text-[#252525]">User Details</DialogTitle>
+              <DialogDescription className="text-[#5B5C5D]">
                 Comprehensive view of {selectedUser.name}
               </DialogDescription>
             </DialogHeader>
             
             {selectedUser && (
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-7 bg-gray-800/50">
-                  <TabsTrigger value="overview" className="text-gray-300 data-[state=active]:bg-blue-600">Overview</TabsTrigger>
-                  <TabsTrigger value="profile" className="text-gray-300 data-[state=active]:bg-blue-600">Profile</TabsTrigger>
-                  <TabsTrigger value="permissions" className="text-gray-300 data-[state=active]:bg-blue-600">Permissions</TabsTrigger>
-                  <TabsTrigger value="sessions" className="text-gray-300 data-[state=active]:bg-blue-600">Sessions</TabsTrigger>
-                  <TabsTrigger value="security" className="text-gray-300 data-[state=active]:bg-blue-600">Security</TabsTrigger>
-                  <TabsTrigger value="activity" className="text-gray-300 data-[state=active]:bg-blue-600">Activity</TabsTrigger>
-                  <TabsTrigger value="logs" className="text-gray-300 data-[state=active]:bg-blue-600">Logs</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-7 rounded-none bg-[#F5F6F7] border border-[#E4E6E8]">
+                  <TabsTrigger value="overview" className="text-[#5B5C5D] data-[state=active]:bg-[#E03A3A] data-[state=active]:text-white">Overview</TabsTrigger>
+                  <TabsTrigger value="profile" className="text-[#5B5C5D] data-[state=active]:bg-[#E03A3A] data-[state=active]:text-white">Profile</TabsTrigger>
+                  <TabsTrigger value="permissions" className="text-[#5B5C5D] data-[state=active]:bg-[#E03A3A] data-[state=active]:text-white">Permissions</TabsTrigger>
+                  <TabsTrigger value="sessions" className="text-[#5B5C5D] data-[state=active]:bg-[#E03A3A] data-[state=active]:text-white">Sessions</TabsTrigger>
+                  <TabsTrigger value="security" className="text-[#5B5C5D] data-[state=active]:bg-[#E03A3A] data-[state=active]:text-white">Security</TabsTrigger>
+                  <TabsTrigger value="activity" className="text-[#5B5C5D] data-[state=active]:bg-[#E03A3A] data-[state=active]:text-white">Activity</TabsTrigger>
+                  <TabsTrigger value="logs" className="text-[#5B5C5D] data-[state=active]:bg-[#E03A3A] data-[state=active]:text-white">Logs</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="overview" className="space-y-6 mt-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card className="bg-gray-800/50 border-gray-700">
+                    <Card className="rounded-none border border-[#E4E6E8] bg-white">
                       <CardHeader>
-                        <CardTitle className="text-white">User Information</CardTitle>
+                        <CardTitle className="text-[#252525]">User Information</CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="flex justify-between">
-                          <span className="text-gray-400">Name</span>
-                          <span className="text-white">{selectedUser.name}</span>
+                          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9A9B9C]">Name</span>
+                          <span className="text-[14px] font-medium text-[#252525]">{selectedUser.name}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-400">Email</span>
-                          <span className="text-white">{selectedUser.email}</span>
+                          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9A9B9C]">Email</span>
+                          <span className="text-[14px] font-medium text-[#252525]">{selectedUser.email}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-400">User ID</span>
-                          <span className="text-white">{selectedUser.id}</span>
+                          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9A9B9C]">User ID</span>
+                          <span className="text-[14px] font-medium text-[#252525]">{selectedUser.id}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-400">Tenant</span>
-                          <span className="text-white">{selectedUser.tenantName || 'N/A'}</span>
+                          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9A9B9C]">Tenant</span>
+                          <span className="text-[14px] font-medium text-[#252525]">{selectedUser.tenantName || 'N/A'}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-400">Role</span>
-                          <span className="text-white">{getRoleBadge(selectedUser.role)}</span>
+                          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9A9B9C]">Role</span>
+                          <span className="text-[14px] font-medium text-[#252525]">{getRoleBadge(selectedUser.role)}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-400">Status</span>
-                          <span className="text-white">{getStatusBadge(selectedUser.status)}</span>
+                          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9A9B9C]">Status</span>
+                          <span className="text-[14px] font-medium text-[#252525]">{getStatusBadge(selectedUser.status)}</span>
                         </div>
                       </CardContent>
                     </Card>
                     
-                    <Card className="bg-gray-800/50 border-gray-700">
+                    <Card className="rounded-none border border-[#E4E6E8] bg-white">
                       <CardHeader>
-                        <CardTitle className="text-white">Account Information</CardTitle>
+                        <CardTitle className="text-[#252525]">Account Information</CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="flex justify-between">
-                          <span className="text-gray-400">Registration Date</span>
-                          <span className="text-white">{selectedUser.registrationDate}</span>
+                          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9A9B9C]">Registration Date</span>
+                          <span className="text-[14px] font-medium text-[#252525]">{selectedUser.registrationDate}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-400">Last Login</span>
-                          <span className="text-white">{selectedUser.lastLogin}</span>
+                          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9A9B9C]">Last Login</span>
+                          <span className="text-[14px] font-medium text-[#252525]">{selectedUser.lastLogin}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-400">Login Count</span>
-                          <span className="text-white">{selectedUser.loginCount}</span>
+                          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9A9B9C]">Login Count</span>
+                          <span className="text-[14px] font-medium text-[#252525]">{selectedUser.loginCount}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-400">Session Count</span>
-                          <span className="text-white">{selectedUser.sessionCount}</span>
+                          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9A9B9C]">Session Count</span>
+                          <span className="text-[14px] font-medium text-[#252525]">{selectedUser.sessionCount}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-400">Risk Score</span>
-                          <span className="text-white">{selectedUser.riskScore.toFixed(2)}</span>
+                          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9A9B9C]">Risk Score</span>
+                          <span className="text-[14px] font-medium text-[#252525]">{selectedUser.riskScore.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-400">Profile Completion</span>
-                          <span className="text-white">{selectedUser.profileComplete}%</span>
+                          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9A9B9C]">Profile Completion</span>
+                          <span className="text-[14px] font-medium text-[#252525]">{selectedUser.profileComplete}%</span>
                         </div>
                       </CardContent>
                     </Card>
                   </div>
                   
-                  <Card className="bg-gray-800/50 border-gray-700">
+                  <Card className="rounded-none border border-[#E4E6E8] bg-white">
                     <CardHeader>
-                      <CardTitle className="text-white">Account Status</CardTitle>
+                      <CardTitle className="text-[#252525]">Account Status</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1021,9 +1021,9 @@ export default function UsersManagement({
                 </TabsContent>
                 
                 <TabsContent value="profile" className="mt-4">
-                  <Card className="bg-gray-800/50 border-gray-700">
+                  <Card className="rounded-none border border-[#E4E6E8] bg-white">
                     <CardHeader>
-                      <CardTitle className="text-white">User Profile</CardTitle>
+                      <CardTitle className="text-[#252525]">User Profile</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <p className="text-gray-400">Profile information for this user would be displayed here.</p>
@@ -1032,9 +1032,9 @@ export default function UsersManagement({
                 </TabsContent>
                 
                 <TabsContent value="permissions" className="mt-4">
-                  <Card className="bg-gray-800/50 border-gray-700">
+                  <Card className="rounded-none border border-[#E4E6E8] bg-white">
                     <CardHeader>
-                      <CardTitle className="text-white">User Permissions</CardTitle>
+                      <CardTitle className="text-[#252525]">User Permissions</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
@@ -1052,9 +1052,9 @@ export default function UsersManagement({
                 </TabsContent>
                 
                 <TabsContent value="sessions" className="mt-4">
-                  <Card className="bg-gray-800/50 border-gray-700">
+                  <Card className="rounded-none border border-[#E4E6E8] bg-white">
                     <CardHeader>
-                      <CardTitle className="text-white">Active Sessions</CardTitle>
+                      <CardTitle className="text-[#252525]">Active Sessions</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <p className="text-gray-400">Active sessions for this user would be displayed here.</p>
@@ -1063,9 +1063,9 @@ export default function UsersManagement({
                 </TabsContent>
                 
                 <TabsContent value="security" className="mt-4">
-                  <Card className="bg-gray-800/50 border-gray-700">
+                  <Card className="rounded-none border border-[#E4E6E8] bg-white">
                     <CardHeader>
-                      <CardTitle className="text-white">Security Settings</CardTitle>
+                      <CardTitle className="text-[#252525]">Security Settings</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <p className="text-gray-400">Security settings for this user would be displayed here.</p>
@@ -1074,9 +1074,9 @@ export default function UsersManagement({
                 </TabsContent>
                 
                 <TabsContent value="activity" className="mt-4">
-                  <Card className="bg-gray-800/50 border-gray-700">
+                  <Card className="rounded-none border border-[#E4E6E8] bg-white">
                     <CardHeader>
-                      <CardTitle className="text-white">Recent Activity</CardTitle>
+                      <CardTitle className="text-[#252525]">Recent Activity</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <p className="text-gray-400">Recent activity for this user would be displayed here.</p>
@@ -1085,9 +1085,9 @@ export default function UsersManagement({
                 </TabsContent>
                 
                 <TabsContent value="logs" className="mt-4">
-                  <Card className="bg-gray-800/50 border-gray-700">
+                  <Card className="rounded-none border border-[#E4E6E8] bg-white">
                     <CardHeader>
-                      <CardTitle className="text-white">User Logs</CardTitle>
+                      <CardTitle className="text-[#252525]">User Logs</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <p className="text-gray-400">User logs would be displayed here.</p>
