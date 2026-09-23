@@ -258,13 +258,13 @@ export default function SuperAdminCommandCenter({
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8">
       {/* ── Summary Stats ─────────────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
         {statsData.map((stat: any, i: any) => (
           <div
             key={i}
-            className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm"
+            className="bg-white p-4 md:p-6 rounded-xl border border-slate-200 shadow-sm"
           >
             <div className="flex justify-between items-start mb-4">
               <div className="p-3 bg-[#E03A3A]/10 text-[#E03A3A] rounded-lg">
@@ -283,7 +283,7 @@ export default function SuperAdminCommandCenter({
               </span>
             </div>
             <p className="text-slate-500 text-sm font-medium">{stat.label}</p>
-            <h3 className="text-3xl font-extrabold text-[#252525] mt-1">
+            <h3 className="text-2xl md:text-3xl font-light tracking-tight text-[#252525] mt-1">
               {stat.value}
             </h3>
           </div>
@@ -291,12 +291,12 @@ export default function SuperAdminCommandCenter({
       </div>
 
       {/* ── Main Grid: Content (2/3) + Sidebar (1/3) ─────────── */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 md:gap-8">
         {/* ── Left Column (2/3) ─────────────────────────────── */}
-        <div className="xl:col-span-2 space-y-8">
+        <div className="xl:col-span-2 space-y-6 md:space-y-8">
           {/* Global Network Status */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+            <div className="p-4 md:p-6 border-b border-slate-100 flex flex-wrap gap-3 justify-between items-center">
               <h4 className="font-bold text-[#252525] flex items-center gap-2">
                 <span className="material-symbols-outlined text-[#E03A3A]">
                   public
@@ -312,7 +312,7 @@ export default function SuperAdminCommandCenter({
                 </button>
               </div>
             </div>
-            <div className="h-96 relative bg-slate-100 flex items-center justify-center">
+            <div className="h-56 md:h-96 relative bg-slate-100 flex items-center justify-center">
               {/* Abstract radial glow */}
               <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_50%_50%,_#E03A3A_0%,_transparent_100%)]" />
               <div className="text-slate-400 flex flex-col items-center">
@@ -347,7 +347,7 @@ export default function SuperAdminCommandCenter({
               {auditTrailData.map((entry: any, i: any) => (
                 <div
                   key={i}
-                  className="p-6 flex gap-4 hover:bg-slate-50 transition-colors"
+                  className="p-4 md:p-6 flex gap-4 hover:bg-slate-50 transition-colors"
                 >
                   <div
                     className={`size-10 rounded-lg flex items-center justify-center shrink-0 ${entry.iconBg}`}
@@ -382,7 +382,7 @@ export default function SuperAdminCommandCenter({
         {/* ── Right Column (1/3) ────────────────────────────── */}
         <div className="space-y-8">
           {/* Control Panel */}
-          <div className="bg-[#252525] text-white p-8 rounded-xl shadow-xl space-y-6">
+          <div className="bg-[#141414] text-white p-5 md:p-8 rounded-xl shadow-xl space-y-6">
             <h4 className="font-bold text-sm uppercase tracking-[0.2em] opacity-60">
               Control Panel
             </h4>

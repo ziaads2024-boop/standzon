@@ -1,4 +1,5 @@
 import { getServerPageContent } from "@/lib/data/serverPageContent";
+import { getFooterSettings } from "@/lib/data/footerSettings";
 import { sanitizeHtml } from "@/lib/utils/html";
 import HeroV2 from "./HeroV2";
 import ProcessPinned from "./ProcessPinned";
@@ -23,7 +24,10 @@ const btnsFor = (top: any[], key: string) =>
     .map((b) => ({ text: b.text, href: b.link || b.href }));
 
 export default async function HomeV2() {
-  const saved: any = await getServerPageContent("home");
+  const [saved, footerSettings]: [any, any] = await Promise.all([
+    getServerPageContent("home"),
+    getFooterSettings(),
+  ]);
   const s = saved?.sections || {};
   const top: any[] = Array.isArray(saved?.buttons) ? saved.buttons : [];
 
@@ -67,7 +71,7 @@ export default async function HomeV2() {
       />
       <NetworkV2 globalPresence={s.globalPresence} moreCountries={s.moreCountries} expandingMarkets={s.expandingMarkets} />
       <ClientsV2 heading={s.clientSay?.heading} quotes={quotes} />
-      <ContactV2 />
+      <ContactV2 initialContact={footerSettings?.contact} />
       <FinalCtaV2
         heading={finalCta.heading}
         paragraph={finalCta.paragraph ? sanitizeHtml(finalCta.paragraph) : undefined}

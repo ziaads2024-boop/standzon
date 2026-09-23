@@ -9,26 +9,28 @@ const field =
   "w-full border-0 border-b border-[#252525]/20 bg-transparent px-0 py-3 text-base outline-none transition-colors placeholder:text-[#252525]/65 focus:border-[#E03A3A]";
 const label = "block text-[10px] font-semibold uppercase tracking-[0.25em] text-[#252525]/65";
 
-export default function ContactV2() {
+export default function ContactV2({ initialContact }: { initialContact?: any }) {
   const { toast } = useToast();
   const [busy, setBusy] = useState(false);
-  const [footer, setFooter] = useState<any>(null);
+  const [contact, setContact] = useState<any>(initialContact || null);
   const [f, setF] = useState({ name: "", email: "", event: "", budget: "", message: "", _hp: "" });
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setF((p) => ({ ...p, [k]: e.target.value }));
 
   useEffect(() => {
+    if (initialContact) return; // already have SSR data; only refetch if it was missing
     let on = true;
     fetch(`/api/admin/footer?ts=${Date.now()}`, { cache: "no-store" })
       .then((r) => r.json())
-      .then((j) => on && setFooter(j?.data || null))
+      .then((j) => on && setContact(j?.data?.contact || null))
       .catch(() => {});
     return () => {
       on = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const c = footer?.contact || {};
+  const c = contact || {};
   const info = [
     { k: "Call", v: c.phone || "+1 (555) 123-4567", href: c.phoneLink },
     { k: "Email", v: c.email || "hello@standszone.com", href: c.emailLink },

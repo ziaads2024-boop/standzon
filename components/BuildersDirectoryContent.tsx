@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, Suspense } from "react";
+import { Eyebrow, Reveal, WordReveal } from "@/components/home-v2/motion";
 import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 const TradeStyleBanner = dynamic(() => import("@/components/TradeStyleBanner"), {
@@ -575,107 +576,66 @@ export default function BuildersDirectoryContent() {
     setCurrentPage(1);
   }, [searchTerm, selectedCountry, selectedCity, minRating, sortBy]);
 
+  const h2 = "mt-6 text-[clamp(2rem,4.4vw,4rem)] font-light leading-[1.02] tracking-[-0.04em]";
+  const pageNums = Array.from({ length: Math.min(5, totalPages) }, (_, i) => i + 1);
+  const resetFilters = () => {
+    setSearchTerm("");
+    setSelectedCountry("all");
+    setSelectedCity("all");
+    setMinRating([0]);
+  };
+  const triggerCls = "rounded-none border-[#252525]/20";
+
   return (
-    <div className="font-inter min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50">
-
-      {/* Hero Section - Matching location pages style */}
-      <section className="relative bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white pt-24 pb-20">
-        <div className="absolute inset-0 opacity-20">
-          <div className="w-full h-full bg-gradient-to-br from-blue-500/10 via-purple-500/5 to-pink-500/10"></div>
-        </div>
-
-        <div className="relative container mx-auto px-6">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="flex justify-center mb-6">
-              <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-lg px-4 py-2">
-                <FiUsers className="w-5 h-5 mr-2" />
-                Global Directory
-              </Badge>
-            </div>
-
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-              <span className="block">Exhibition Stand Builders</span>
-              <span className="block bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 bg-clip-text text-transparent">
-                Directory
-              </span>
-            </h1>
-
-            <p className="text-xl md:text-2xl text-slate-300 mb-8 leading-relaxed">
+    <main className="bg-white text-[#252525]">
+      {/* Hero */}
+      <section className="relative overflow-hidden bg-[#141414] px-6 pb-14 pt-32 text-white md:px-10 md:pb-20 md:pt-44">
+        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:72px_72px] [mask-image:radial-gradient(ellipse_at_70%_40%,black,transparent_70%)]" />
+        <div aria-hidden className="pointer-events-none absolute -right-40 top-0 h-[560px] w-[560px] rounded-full bg-[#E03A3A]/25 blur-[140px]" />
+        <div className="relative mx-auto max-w-[1400px]">
+          <Eyebrow light>Global directory</Eyebrow>
+          <WordReveal as="h1" onLoad text="Exhibition stand builders directory" className="mt-8 max-w-4xl text-[clamp(2.25rem,5.6vw,5rem)] font-light leading-[1] tracking-[-0.04em]" />
+          <Reveal delay={0.2}>
+            <p className="mt-8 max-w-xl text-base font-light leading-relaxed text-white/70 md:text-lg">
               Find verified exhibition stand builders worldwide. Connect with professionals who deliver exceptional results.
             </p>
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
-              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6">
-                <div className="flex items-center justify-center mb-3">
-                  <SafeIcon IconComponent={FiUsers} className="w-8 h-8 text-blue-400" />
-                </div>
-                <div className="text-2xl font-bold">{realTimeStats.totalBuilders}</div>
-                <div className="text-slate-300 text-sm">Total Builders</div>
-              </div>
-
-              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6">
-                <div className="flex items-center justify-center mb-3">
-                  <SafeIcon IconComponent={FiShield} className="w-8 h-8 text-green-400" />
-                </div>
-                <div className="text-2xl font-bold">{realTimeStats.verifiedBuilders}</div>
-                <div className="text-slate-300 text-sm">Verified Builders</div>
-              </div>
-
-              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6">
-                <div className="flex items-center justify-center mb-3">
-                  <SafeIcon IconComponent={FiGlobe} className="w-8 h-8 text-purple-400" />
-                </div>
-                <div className="text-2xl font-bold">{realTimeStats.totalCountries}</div>
-                <div className="text-slate-300 text-sm">Countries</div>
-              </div>
-
-              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6">
-                <div className="flex items-center justify-center mb-3">
-                  <SafeIcon IconComponent={FiStar} className="w-8 h-8 text-yellow-400" />
-                </div>
-                <div className="text-2xl font-bold">
-                  {realTimeStats.averageRating.toFixed(1)}
-                </div>
-                <div className="text-slate-300 text-sm">Avg Rating</div>
-              </div>
+            <div className="mt-10">
+              <Link href="/quote" className="inline-block bg-[#E03A3A] px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.25em] text-white transition-colors hover:bg-white hover:text-[#252525]">Get free quote</Link>
             </div>
-
-            {/* CTA */}
-            <div className="max-w-2xl mx-auto">
-              <Link href="/quote">
-                <Button className="w-full bg-gradient-to-r from-pink-500 to-rose-500 text-white py-4 text-lg font-semibold rounded-xl shadow-lg transition-all duration-200">
-                  <SafeIcon IconComponent={FiArrowRight} className="w-5 h-5 mr-2" />
-                  Get Free Quote from Verified Builders
-                </Button>
-              </Link>
-            </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-6 py-12">
-        {/* Filters and Search */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-            <h2 className="text-2xl font-bold text-slate-900">
-              Browse Exhibition Builders
-            </h2>
+      {/* Stats */}
+      <section className="border-y border-white/10 bg-[#141414] text-white">
+        <div className="mx-auto grid max-w-[1400px] grid-cols-2 md:grid-cols-4">
+          {[
+            { v: realTimeStats.totalBuilders, l: "Total builders" },
+            { v: realTimeStats.verifiedBuilders, l: "Verified builders" },
+            { v: realTimeStats.totalCountries, l: "Countries" },
+            { v: realTimeStats.averageRating.toFixed(1), l: "Avg rating" },
+          ].map((st, i) => (
+            <div key={st.l} className={`px-4 py-6 md:px-10 md:py-14 ${i % 2 === 1 ? "border-l border-white/10" : ""} ${i > 0 ? "md:border-l md:border-white/10" : ""} ${i > 1 ? "border-t border-white/10 md:border-t-0" : ""}`}>
+              <div className="text-[clamp(1.7rem,5vw,3.5rem)] font-extralight leading-none tracking-[-0.04em]">{st.v}</div>
+              <div className="mt-2 text-[9px] font-semibold uppercase tracking-[0.2em] text-white/80 md:mt-4 md:text-[10px] md:tracking-[0.25em]">{st.l}</div>
+            </div>
+          ))}
+        </div>
+      </section>
 
-            <div className="flex items-center space-x-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowFilters(!showFilters)}
-                className="border-slate-300 text-slate-700 hover:bg-slate-100"
-              >
-                <SafeIcon IconComponent={FiFilter} className="w-4 h-4 mr-2" />
-                {showFilters ? 'Hide Filters' : 'Show Filters'}
-              </Button>
-
+      {/* Filters */}
+      <section className="sticky top-0 z-30 border-b border-[#252525]/10 bg-white/95 backdrop-blur">
+        <div className="mx-auto max-w-[1400px] px-6 py-4 md:px-10">
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#252525]/65">
+              {loading ? "Loading…" : `${filteredBuilders.length} builders`}
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setShowFilters(!showFilters)} className="border border-[#252525]/20 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.15em] transition-colors hover:border-[#E03A3A] hover:text-[#E03A3A]">
+                {showFilters ? "Hide filters" : "Show filters"}
+              </button>
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className={`w-40 ${triggerCls}`}>
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
@@ -687,404 +647,157 @@ export default function BuildersDirectoryContent() {
               </Select>
             </div>
           </div>
-
-          {/* Search and Filters */}
           {showFilters && (
-            <Card className="mb-6 border-slate-200 shadow-sm">
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                  {/* Search */}
-                  <div className="lg:col-span-2">
-                    <div className="relative">
-                      <SafeIcon IconComponent={FiSearch} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-                      <Input
-                        placeholder="Search builders, services, locations..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 border-slate-300 focus:ring-pink-500 focus:border-pink-500"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Country Filter */}
-                  <div>
-                    <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-                      <SelectTrigger className="border-slate-300 focus:ring-pink-500 focus:border-pink-500">
-                        <SelectValue placeholder="Country" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Countries</SelectItem>
-                        {countries.map((country) => (
-                          <SelectItem key={country} value={country}>
-                            {country}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* City Filter */}
-                  <div>
-                    <Select value={selectedCity} onValueChange={setSelectedCity}>
-                      <SelectTrigger className="border-slate-300 focus:ring-pink-500 focus:border-pink-500">
-                        <SelectValue placeholder="City" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Cities</SelectItem>
-                        {cities.map((city) => (
-                          <SelectItem key={city} value={city}>
-                            {city}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Rating Filter */}
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-slate-700">Min Rating</span>
-                      <span className="text-sm font-bold text-pink-600">{minRating[0]}+</span>
-                    </div>
-                    <Slider
-                      value={minRating}
-                      onValueChange={setMinRating}
-                      max={5}
-                      step={0.5}
-                      className="w-full"
-                    />
-                  </div>
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+              <div className="relative lg:col-span-2">
+                <SafeIcon IconComponent={FiSearch} className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#252525]/50" />
+                <Input placeholder="Search builders, services, locations..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="rounded-none border-[#252525]/20 pl-10 focus-visible:ring-[#E03A3A]" />
+              </div>
+              <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+                <SelectTrigger className={triggerCls}><SelectValue placeholder="Country" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Countries</SelectItem>
+                  {countries.map((country) => (<SelectItem key={country} value={country}>{country}</SelectItem>))}
+                </SelectContent>
+              </Select>
+              <Select value={selectedCity} onValueChange={setSelectedCity}>
+                <SelectTrigger className={triggerCls}><SelectValue placeholder="City" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Cities</SelectItem>
+                  {cities.map((city) => (<SelectItem key={city} value={city}>{city}</SelectItem>))}
+                </SelectContent>
+              </Select>
+              <div>
+                <div className="mb-2 flex items-center justify-between text-xs">
+                  <span className="font-semibold uppercase tracking-[0.15em] text-[#252525]/65">Min rating</span>
+                  <span className="font-semibold text-[#E03A3A]">{minRating[0]}+</span>
                 </div>
-              </CardContent>
-            </Card>
+                <Slider value={minRating} onValueChange={setMinRating} max={5} step={0.5} className="w-full" />
+              </div>
+            </div>
           )}
         </div>
+      </section>
 
-        {/* Loading State */}
-        {loading && (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
-              <p className="text-slate-600">Loading exhibition builders...</p>
+      {/* Results */}
+      <section className="bg-[#F0EDE8] px-6 py-12 md:px-10 md:py-20">
+        <div className="mx-auto max-w-[1400px]">
+          <Eyebrow>Browse builders</Eyebrow>
+          <h2 className={h2}>Find your stand partner</h2>
+
+          {loading && (
+            <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {[...Array(6)].map((_, i) => (<div key={i} className="h-72 animate-pulse bg-white" />))}
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Empty State */}
-        {!loading && currentBuilders.length === 0 && (
-          <div className="text-center py-12">
-            <div className="mx-auto w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-6">
-              <SafeIcon IconComponent={FiUsers} className="w-12 h-12 text-slate-400" />
+          {!loading && currentBuilders.length === 0 && (
+            <div className="mt-12 border border-dashed border-[#252525]/25 bg-white p-10 text-center">
+              <h3 className="text-2xl font-light tracking-tight">No builders found</h3>
+              <p className="mt-2 text-[#252525]/70">Try adjusting your search or filter criteria</p>
+              <button onClick={resetFilters} className="mt-6 bg-[#E03A3A] px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.25em] text-white transition-colors hover:bg-[#141414]">Clear filters</button>
             </div>
-            <h3 className="text-xl font-semibold text-slate-900 mb-2">No builders found</h3>
-            <p className="text-slate-600 mb-6">Try adjusting your search or filter criteria</p>
-            <Button
-              onClick={() => {
-                setSearchTerm("");
-                setSelectedCountry("all");
-                setSelectedCity("all");
-                setMinRating([0]);
-              }}
-              className="bg-pink-500 hover:bg-pink-600 text-white"
-            >
-              Clear Filters
-            </Button>
-          </div>
-        )}
+          )}
 
-        {/* Builders Grid */}
-        {!loading && currentBuilders.length > 0 && (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {currentBuilders.map((builder) => (
-                <Card
-                  key={builder.id}
-                  className="border-slate-200 hover:border-pink-300 hover:shadow-lg transition-all duration-200 overflow-hidden"
-                >
-                  <CardContent className="p-0">
-                    {/* Header with logo and verification */}
-                    <div className="p-6 pb-4">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-20 h-12 bg-gradient-to-br from-pink-500 to-rose-500 rounded-lg flex items-center justify-center text-white font-bold">
-                            {builder.companyName.charAt(0)}
-                          </div>
-                          <div>
-                            <h3 className="font-bold text-slate-900 line-clamp-1">
-                              {builder.companyName}
-                            </h3>
-                            <div className="flex items-center space-x-1">
-                              <SafeIcon IconComponent={FiMapPin} className="w-3 h-3 text-slate-500" />
-                              <span className="text-xs text-slate-600">
-                                {builder.headquarters.city}, {builder.headquarters.country}
-                              </span>
+          {!loading && currentBuilders.length > 0 && (
+            <>
+              <div className="mt-12 grid gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3">
+                {currentBuilders.map((builder, i) => (
+                  <Reveal key={builder.id} delay={Math.min(i, 3) * 0.05} y={18}>
+                    <div className="group flex h-full flex-col border border-transparent bg-white transition-all duration-500 hover:border-[#E03A3A] hover:shadow-[0_16px_40px_rgba(37,37,37,0.08)]">
+                      <div className="flex-1 p-6 md:p-7">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex min-w-0 items-center gap-3">
+                            <div className="flex h-12 w-12 shrink-0 items-center justify-center bg-[#141414] text-lg font-light text-white transition-colors duration-500 group-hover:bg-[#E03A3A]">{builder.companyName.charAt(0)}</div>
+                            <div className="min-w-0">
+                              <h3 className="truncate text-lg font-medium tracking-tight">{builder.companyName}</h3>
+                              <div className="truncate text-xs text-[#252525]/65">{builder.headquarters.city}, {builder.headquarters.country}</div>
                             </div>
                           </div>
+                          {builder.verified && <span className="shrink-0 bg-[#E03A3A] px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.15em] text-white">Verified</span>}
                         </div>
-                        {builder.verified && (
-                          <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">
-                            <SafeIcon IconComponent={FiShield} className="w-3 h-3 mr-1" />
-                            Verified
-                          </Badge>
+                        <div className="mt-5 flex items-center justify-between text-sm">
+                          <span className="text-[#E03A3A]">★ <span className="font-medium text-[#252525]">{builder.rating.toFixed(1)}</span></span>
+                          <span className="text-xs text-[#252525]/65">{builder.reviewCount} reviews</span>
+                        </div>
+                        <p className="mt-4 line-clamp-3 text-sm leading-relaxed text-[#252525]/70">{builder.companyDescription || "Professional exhibition stand builder with years of experience."}</p>
+                        <div className="mt-5 grid grid-cols-2 gap-px bg-[#252525]/10 text-center">
+                          <div className="bg-[#F0EDE8]/60 py-3"><div className="text-lg font-light">{builder.projectsCompleted}</div><div className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#252525]/65">Projects</div></div>
+                          <div className="bg-[#F0EDE8]/60 py-3"><div className="text-lg font-light">{builder.establishedYear}</div><div className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#252525]/65">Established</div></div>
+                        </div>
+                        {builder.keyStrengths && builder.keyStrengths.length > 0 && (
+                          <div className="mt-4 flex flex-wrap gap-1.5">
+                            {builder.keyStrengths.slice(0, 3).map((strength, index) => (<span key={index} className="border border-[#252525]/15 px-2 py-1 text-[11px] text-[#252525]/70">{strength}</span>))}
+                            {builder.keyStrengths.length > 3 && <span className="px-1 py-1 text-[11px] text-[#252525]/60">+{builder.keyStrengths.length - 3}</span>}
+                          </div>
                         )}
                       </div>
-
-                      {/* Rating and Stats */}
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center space-x-1">
-                          <div className="flex">
-                            {[...Array(5)].map((_, i) => (
-                              <SafeIcon
-                                key={i}
-                                IconComponent={FiStar}
-                                className={`w-4 h-4 ${i < Math.floor(builder.rating) ? 'text-yellow-400 fill-current' : 'text-slate-300'}`}
-                              />
-                            ))}
-                          </div>
-                          <span className="text-sm font-medium text-slate-900">
-                            {builder.rating.toFixed(1)}
-                          </span>
-                        </div>
-                        <div className="text-xs text-slate-600">
-                          {builder.reviewCount} reviews
-                        </div>
-                      </div>
-
-                      {/* Description */}
-                      <p className="text-sm text-slate-600 mb-4 line-clamp-2">
-                        {builder.companyDescription || "Professional exhibition stand builder with years of experience."}
-                      </p>
-
-                      {/* Key Stats */}
-                      <div className="grid grid-cols-2 gap-3 mb-4">
-                        <div className="bg-slate-50 rounded-lg p-2 text-center">
-                          <div className="text-xs text-slate-600 mb-1">Projects</div>
-                          <div className="font-bold text-slate-900">
-                            {builder.projectsCompleted}
-                          </div>
-                        </div>
-                        <div className="bg-slate-50 rounded-lg p-2 text-center">
-                          <div className="text-xs text-slate-600 mb-1">Est. Year</div>
-                          <div className="font-bold text-slate-900">
-                            {builder.establishedYear}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Key Strengths */}
-                      {builder.keyStrengths && builder.keyStrengths.length > 0 && (
-                        <div className="mb-4">
-                          <div className="flex flex-wrap gap-1">
-                            {builder.keyStrengths.slice(0, 3).map((strength, index) => (
-                              <Badge key={index} variant="secondary" className="text-xs">
-                                {strength}
-                              </Badge>
-                            ))}
-                            {builder.keyStrengths.length > 3 && (
-                              <Badge variant="secondary" className="text-xs">
-                                +{builder.keyStrengths.length - 3} more
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="border-t border-slate-100 p-4 bg-slate-50">
-                      <div className="flex space-x-2">
-                        <Link
-                          href={`/builders/${builder.slug}`}
-                          className="flex-1"
-                        >
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full border-slate-300 text-slate-700 hover:bg-slate-100"
-                          >
-                            <SafeIcon IconComponent={FiEye} className="w-4 h-4 mr-1" />
-                            View Profile
-                          </Button>
-                        </Link>
-                        <Link
-                          href={`/quote?builder=${builder.id}`}
-                          className="flex-1"
-                        >
-                          <Button
-                            size="sm"
-                            className="w-full bg-pink-500 hover:bg-pink-600 text-white"
-                          >
-                            <SafeIcon IconComponent={FiArrowRight} className="w-4 h-4 mr-1" />
-                            Quote
-                          </Button>
-                        </Link>
+                      <div className="grid grid-cols-2 border-t border-[#252525]/10 text-[11px] font-semibold uppercase tracking-[0.15em]">
+                        <Link href={`/builders/${builder.slug}`} className="py-4 text-center transition-colors hover:bg-[#F5F6F7]">View profile</Link>
+                        <Link href={`/quote?builder=${builder.id}`} className="bg-[#141414] py-4 text-center text-white transition-colors hover:bg-[#E03A3A]">Get quote</Link>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                  </Reveal>
+                ))}
+              </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between border-t border-slate-200 pt-6">
-                <div className="text-sm text-slate-600">
-                  Showing {startIndex + 1}-{Math.min(endIndex, filteredBuilders.length)} of {filteredBuilders.length} builders
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                    className="border-slate-300 text-slate-700 hover:bg-slate-100"
-                  >
-                    Previous
-                  </Button>
-
-                  <div className="flex items-center space-x-1">
-                    {[...Array(Math.min(5, totalPages))].map((_, i) => {
-                      const pageNum = i + 1;
-                      return (
-                        <Button
-                          key={pageNum}
-                          variant={currentPage === pageNum ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setCurrentPage(pageNum)}
-                          className={currentPage === pageNum
-                            ? "bg-pink-500 hover:bg-pink-600 text-white"
-                            : "border-slate-300 text-slate-700 hover:bg-slate-100"
-                          }
-                        >
-                          {pageNum}
-                        </Button>
-                      );
-                    })}
+              {totalPages > 1 && (
+                <div className="mt-10 flex flex-col gap-4 border-t border-[#252525]/15 pt-6 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="text-sm text-[#252525]/70">Showing {startIndex + 1}-{Math.min(endIndex, filteredBuilders.length)} of {filteredBuilders.length} builders</div>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="border border-[#252525]/20 px-3 py-2 text-xs font-semibold uppercase tracking-[0.1em] transition-colors hover:border-[#E03A3A] disabled:opacity-40">Prev</button>
+                    {pageNums.map((n) => (
+                      <button key={n} onClick={() => setCurrentPage(n)} className={`h-9 w-9 border text-xs font-semibold transition-colors ${currentPage === n ? "border-[#E03A3A] bg-[#E03A3A] text-white" : "border-[#252525]/20 hover:border-[#E03A3A]"}`}>{n}</button>
+                    ))}
                     {totalPages > 5 && (
                       <>
-                        {currentPage > 3 && (
-                          <span className="text-slate-400 px-2">...</span>
-                        )}
-                        {currentPage > 3 && currentPage < totalPages - 1 && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentPage(currentPage)}
-                            className="border-slate-300 text-slate-700 hover:bg-slate-100"
-                          >
-                            {currentPage}
-                          </Button>
-                        )}
-                        {currentPage < totalPages - 2 && (
-                          <span className="text-slate-400 px-2">...</span>
-                        )}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setCurrentPage(totalPages)}
-                          className="border-slate-300 text-slate-700 hover:bg-slate-100"
-                        >
-                          {totalPages}
-                        </Button>
+                        <span className="px-1 text-[#252525]/50">…</span>
+                        <button onClick={() => setCurrentPage(totalPages)} className={`h-9 min-w-9 border px-2 text-xs font-semibold transition-colors ${currentPage === totalPages ? "border-[#E03A3A] bg-[#E03A3A] text-white" : "border-[#252525]/20 hover:border-[#E03A3A]"}`}>{totalPages}</button>
                       </>
                     )}
+                    <button onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className="border border-[#252525]/20 px-3 py-2 text-xs font-semibold uppercase tracking-[0.1em] transition-colors hover:border-[#E03A3A] disabled:opacity-40">Next</button>
                   </div>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                    className="border-slate-300 text-slate-700 hover:bg-slate-100"
-                  >
-                    Next
-                  </Button>
                 </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
+              )}
+            </>
+          )}
+        </div>
+      </section>
 
-      {/* Featured Section */}
-      <section className="bg-gradient-to-br from-slate-900 to-slate-800 text-white py-16">
-        <div className="container mx-auto px-6">
-          <div className="max-w-4xl mx-auto text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              Why Choose Our Verified Builders?
-            </h2>
-            <p className="text-xl text-slate-300 mb-8">
-              Our platform connects you with pre-vetted exhibition stand builders who deliver exceptional results.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <SafeIcon IconComponent={FiShield} className="w-8 h-8 text-pink-400" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">Verified Professionals</h3>
-              <p className="text-slate-300">
-                Every builder undergoes a rigorous verification process to ensure quality and reliability.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <SafeIcon IconComponent={FiAward} className="w-8 h-8 text-blue-400" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">Award-Winning Work</h3>
-              <p className="text-slate-300">
-                Our builders have won industry recognition for innovative designs and exceptional craftsmanship.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <SafeIcon IconComponent={FiClock} className="w-8 h-8 text-purple-400" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">On-Time Delivery</h3>
-              <p className="text-slate-300">
-                Guaranteed project completion within agreed timelines with transparent communication throughout.
-              </p>
-            </div>
+      {/* Why */}
+      <section className="bg-[#141414] px-6 py-16 text-white md:px-10 md:py-32">
+        <div className="mx-auto max-w-[1400px]">
+          <Eyebrow light>Why StandsZone</Eyebrow>
+          <WordReveal text="Why choose our verified builders" className={h2} />
+          <p className="mt-6 max-w-xl text-white/70">Our platform connects you with pre-vetted exhibition stand builders who deliver exceptional results.</p>
+          <div className="mt-12 grid border-t border-white/20 md:mt-16 md:grid-cols-3">
+            {[
+              { t: "Verified professionals", d: "Every builder undergoes a rigorous verification process to ensure quality and reliability." },
+              { t: "Award-winning work", d: "Our builders have won industry recognition for innovative designs and exceptional craftsmanship." },
+              { t: "On-time delivery", d: "Guaranteed project completion within agreed timelines with transparent communication throughout." },
+            ].map((b, i) => (
+              <Reveal key={b.t} delay={i * 0.06}>
+                <div className="h-full border-b border-white/10 py-8 md:border-b-0 md:border-r md:border-white/10 md:px-8 md:first:pl-0 md:last:border-r-0">
+                  <div className="text-xs font-semibold tabular-nums tracking-[0.2em] text-[#E03A3A]">{String(i + 1).padStart(2, "0")}</div>
+                  <h3 className="mt-6 text-2xl font-light tracking-tight">{b.t}</h3>
+                  <p className="mt-4 text-sm leading-relaxed text-white/70">{b.d}</p>
+                </div>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-br from-pink-50 to-rose-50">
-        <div className="container mx-auto px-6">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6">
-              Ready to Find Your Perfect Builder?
-            </h2>
-            <p className="text-xl text-slate-700 mb-8">
-              Get matched with verified exhibition stand builders who meet your specific requirements.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/quote">
-                <Button className="bg-gradient-to-r from-pink-500 to-rose-500 text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-lg transition-all duration-200">
-                  <SafeIcon IconComponent={FiArrowRight} className="w-5 h-5 mr-2" />
-                  Get Free Quote
-                </Button>
-              </Link>
-              <Link href="/builders">
-                <Button variant="outline" className="border-slate-300 text-slate-700 px-8 py-4 text-lg font-semibold rounded-xl">
-                  <SafeIcon IconComponent={FiUsers} className="w-5 h-5 mr-2" />
-                  Browse All Builders
-                </Button>
-              </Link>
-            </div>
+      {/* CTA */}
+      <section className="bg-[#E03A3A] px-6 py-16 text-white md:px-10 md:py-28">
+        <Reveal className="mx-auto grid max-w-[1400px] gap-8 md:grid-cols-[1fr_auto] md:items-end">
+          <div>
+            <h2 className="max-w-[18ch] text-[clamp(2rem,5vw,4.5rem)] font-light leading-[1] tracking-[-0.04em]">Ready to find your perfect builder?</h2>
+            <p className="mt-5 max-w-xl text-white/90">Get matched with verified exhibition stand builders who meet your specific requirements.</p>
           </div>
-        </div>
+          <Link href="/quote" className="whitespace-nowrap bg-[#141414] px-8 py-4 text-center text-[11px] font-semibold uppercase tracking-[0.25em] transition-colors hover:bg-white hover:text-[#252525]">Get free quote</Link>
+        </Reveal>
       </section>
-
-      <TradeStyleBanner
-        mainHeading="Find Exhibition Stand"
-        highlightHeading="Builders Worldwide"
-        description="Connect with verified professionals who specialize in creating stunning exhibition stands for trade shows and events."
-      />
-    </div>
+    </main>
   );
 }

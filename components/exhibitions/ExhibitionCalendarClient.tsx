@@ -28,7 +28,15 @@ interface ExhibitionRow {
   featured: boolean;
 }
 
-export default function ExhibitionCalendarClient() {
+export default function ExhibitionCalendarClient({
+  initialExhibitions = [],
+  initialTotal = 0,
+  initialGroupedCountries = [],
+}: {
+  initialExhibitions?: ExhibitionRow[];
+  initialTotal?: number;
+  initialGroupedCountries?: any[];
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -41,10 +49,11 @@ export default function ExhibitionCalendarClient() {
   const [city, setCity] = useState(initialCity);
   const [year, setYear] = useState(initialYear);
   const [search, setSearch] = useState(initialSearch);
-  const [exhibitions, setExhibitions] = useState<ExhibitionRow[]>([]);
+  const [exhibitions, setExhibitions] = useState<ExhibitionRow[]>(initialExhibitions);
   const [loading, setLoading] = useState(false);
-  const [total, setTotal] = useState(0);
-  const [groupedCountries, setGroupedCountries] = useState<any[]>([]);
+  const [total, setTotal] = useState(initialTotal);
+  const [groupedCountries, setGroupedCountries] = useState<any[]>(initialGroupedCountries);
+  const [skipFirstFetch, setSkipFirstFetch] = useState(!initialSearch && initialExhibitions.length > 0);
 
   // UAE emirates (7 + Al Ain as part of Abu Dhabi)
   const UAE_EMIRATES = ["Dubai", "Abu Dhabi", "Sharjah", "Ajman", "Fujairah", "Ras Al Khaimah", "Umm Al Quwain", "Al Ain"];
@@ -116,12 +125,15 @@ export default function ExhibitionCalendarClient() {
   };
 
   useEffect(() => {
+    if (skipFirstFetch) { setSkipFirstFetch(false); return; }
     fetchCalendar();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [country, city, year]);
 
   useEffect(() => {
+    if (initialGroupedCountries.length > 0) return;
     fetchGrouped();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCountryChange = (val: string) => {

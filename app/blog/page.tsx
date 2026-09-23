@@ -1,9 +1,6 @@
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { FiCalendar, FiClock, FiArrowRight, FiBookOpen, FiCompass, FiTrendingUp, FiDollarSign, FiZap, FiUsers } from 'react-icons/fi';
-import { FiAward } from 'react-icons/fi';
 import { getFeaturedArticles, blogArticles, categories } from '@/lib/blog-data';
+import { Eyebrow, Reveal, WordReveal } from '@/components/home-v2/motion';
 
 export const metadata = {
   title: "Exhibition Industry Insights, Guides & Trade Show Intelligence | StandsZone",
@@ -14,247 +11,150 @@ export const metadata = {
   },
 };
 
-const topicIcons = {
-  "Exhibition Stand Guides": FiCompass,
-  "City & Country Guides": FiBookOpen,
-  "Trade Show Planning": FiTrendingUp,
-  "Costs & Budgeting": FiDollarSign,
-  "Design & Trends": FiZap,
-  "Technology & Innovation": FiZap,
-  "Sustainability": FiAward,
-  "Contractor Selection": FiUsers
-};
+const pad = (i: number) => String(i + 1).padStart(2, '0');
+const h2 = "mt-6 text-[clamp(2rem,4.4vw,4rem)] font-light leading-[1.02] tracking-[-0.04em]";
 
 export default function BlogPage() {
   const featuredArticles = getFeaturedArticles();
   const recentArticles = blogArticles.slice(0, 6);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section - Editorial Introduction */}
-      <section className="relative bg-gradient-to-b from-slate-900 to-slate-800 text-white overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-900/20 via-transparent to-transparent"></div>
-        <div className="relative max-w-5xl mx-auto px-6 sm:px-8 lg:px-12 py-24 md:py-32">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-[1.1] tracking-tight">
-            Exhibition Industry Insights,<br />Guides & Trade Show Intelligence
-          </h1>
-          <p className="text-xl md:text-2xl text-slate-300 leading-relaxed max-w-3xl font-light">
-            A professional knowledge hub for exhibitors, brands, and event professionals.
-            Comprehensive guides covering stand design, city insights, and industry intelligence.
-          </p>
+    <main className="bg-white text-[#252525]">
+      {/* Hero */}
+      <section className="relative overflow-hidden bg-[#141414] px-6 pb-16 pt-32 text-white md:px-10 md:pb-24 md:pt-44">
+        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:72px_72px] [mask-image:radial-gradient(ellipse_at_70%_40%,black,transparent_70%)]" />
+        <div aria-hidden className="pointer-events-none absolute -right-40 top-0 h-[560px] w-[560px] rounded-full bg-[#E03A3A]/25 blur-[140px]" />
+        <div className="relative mx-auto max-w-[1400px]">
+          <Eyebrow light>Insights</Eyebrow>
+          <WordReveal as="h1" onLoad text="Exhibition industry insights & guides" className="mt-8 max-w-4xl text-[clamp(2.5rem,6vw,5.5rem)] font-light leading-[1] tracking-[-0.04em]" />
+          <Reveal delay={0.2}>
+            <p className="mt-8 max-w-xl text-base font-light leading-relaxed text-white/70 md:text-lg">
+              A knowledge hub for exhibitors, brands, and event professionals — stand design, city insights, costs and contractor selection.
+            </p>
+          </Reveal>
         </div>
       </section>
 
-      {/* Topic Navigation - Editorial Index */}
-      <section className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12 py-16 md:py-20">
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-10">Browse Topics</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-6">
-          {categories.map((category) => {
-            const Icon = topicIcons[category.name as keyof typeof topicIcons] || FiBookOpen;
-            return (
-              <div key={category.slug} className="group cursor-pointer">
-                <div className="flex items-start gap-3 mb-2">
-                  <Icon className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h3 className="text-base font-semibold text-gray-900 group-hover:text-blue-600 transition-colors mb-1">
-                      {category.name}
-                    </h3>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      {category.description}
-                    </p>
-                  </div>
+      {/* Topics */}
+      <section className="bg-[#F0EDE8] px-6 py-16 md:px-10 md:py-24">
+        <div className="mx-auto max-w-[1400px]">
+          <Eyebrow>Browse topics</Eyebrow>
+          <div className="mt-10 grid border-t border-[#252525] sm:grid-cols-2 lg:grid-cols-4">
+            {categories.map((category, i) => (
+              <Reveal key={category.slug} delay={Math.min(i, 4) * 0.04} y={16}>
+                <div className="h-full border-b border-[#252525]/15 py-7 sm:pr-6">
+                  <div className="text-xs font-semibold tabular-nums tracking-[0.2em] text-[#E03A3A]">{pad(i)}</div>
+                  <h3 className="mt-4 text-xl font-light tracking-tight">{category.name}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[#252525]/70">{category.description}</p>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Featured / Essential Guides */}
-      <section className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-16 md:py-24">
-        <div className="mb-14">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
-            Essential Guides
-          </h2>
-          <p className="text-lg text-gray-600">
-            Comprehensive industry guides for exhibition professionals
-          </p>
-        </div>
-
-        <div className="grid lg:grid-cols-3 gap-8 lg:gap-10">
-          {featuredArticles.map((article, index) => (
-            <Link
-              key={article.slug}
-              href={`/blog/${article.slug}`}
-              className="group"
-            >
-              <article className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden h-full flex flex-col">
-                {/* Visual Header with Depth */}
-                <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-slate-800 h-56 flex items-end p-8">
-                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-blue-500/30 via-transparent to-transparent"></div>
-                  <div className="relative z-10">
-                    <Badge className="bg-amber-400 text-amber-950 font-semibold mb-4 shadow-sm">
-                      Essential Guide
-                    </Badge>
-                    <h3 className="text-2xl font-bold text-white leading-tight group-hover:underline decoration-2 underline-offset-4">
-                      {article.title}
-                    </h3>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="p-8 flex-1 flex flex-col">
-                  <div className="mb-4">
-                    <Badge variant="outline" className="text-xs font-medium">
-                      {article.category}
-                    </Badge>
-                  </div>
-
-                  <p className="text-gray-700 leading-relaxed mb-6 flex-1">
-                    {article.excerpt}
-                  </p>
-
-                  <div className="flex items-center justify-between text-sm text-gray-500 pt-4 border-t border-gray-100">
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-1.5">
-                        <FiClock className="w-4 h-4" />
-                        <span>{article.readTime}</span>
-                      </div>
-                    </div>
-                    {article.lastUpdated && (
-                      <span className="text-xs text-emerald-600 font-medium">
-                        Updated Jan 2025
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </article>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Latest Insights - Secondary Content */}
-      <section className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-16 md:py-20">
-        <div className="mb-12">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-            Latest Insights
-          </h2>
-          <p className="text-gray-600">
-            Recent articles and industry updates
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {recentArticles.map((article) => (
-            <Link
-              key={article.slug}
-              href={`/blog/${article.slug}`}
-              className="group"
-            >
-              <article className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow h-full flex flex-col">
-                <div className="mb-4">
-                  <Badge variant="outline" className="text-xs font-medium text-gray-600">
-                    {article.category}
-                  </Badge>
-                </div>
-
-                <h3 className="text-lg font-semibold text-gray-900 mb-3 leading-snug group-hover:text-blue-600 transition-colors">
-                  {article.title}
-                </h3>
-
-                <p className="text-sm text-gray-600 leading-relaxed mb-4 flex-1 line-clamp-3">
-                  {article.excerpt}
-                </p>
-
-                <div className="flex items-center gap-3 text-xs text-gray-500 pt-3 border-t border-gray-100">
-                  <div className="flex items-center gap-1">
-                    <FiClock className="w-3.5 h-3.5" />
-                    <span>{article.readTime}</span>
-                  </div>
-                  <span>•</span>
-                  <div className="flex items-center gap-1">
-                    <FiCalendar className="w-3.5 h-3.5" />
-                    <span>{new Date(article.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
-                  </div>
-                </div>
-              </article>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Internal Linking - Editorial Paths */}
-      <section className="bg-white border-t border-gray-200">
-        <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12 py-16 md:py-20">
-          <div className="grid lg:grid-cols-2 gap-16 lg:gap-20">
-            {/* Popular City Guides */}
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-8">
-                Popular Exhibition City Guides
-              </h2>
-              <nav className="space-y-4">
-                {['cologne', 'berlin', 'hamburg', 'dubai', 'las-vegas'].map((city) => (
-                  <Link
-                    key={city}
-                    href={`/exhibition-stands/${city === 'dubai' ? 'united-arab-emirates/' : city === 'las-vegas' ? 'united-states/' : 'germany/'}${city}`}
-                    className="group flex items-center gap-3 text-gray-700 hover:text-blue-600 transition-colors"
-                  >
-                    <FiArrowRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
-                    <span className="text-base capitalize">
-                      {city.replace(/-/g, ' ')} Exhibition Stands
-                    </span>
-                  </Link>
-                ))}
-              </nav>
-            </div>
-
-            {/* Popular Country Guides */}
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-8">
-                Exhibition Stands by Country
-              </h2>
-              <nav className="space-y-4">
-                {[
-                  { slug: 'germany', label: 'Germany' },
-                  { slug: 'united-states', label: 'United States' },
-                  { slug: 'united-arab-emirates', label: 'United Arab Emirates' },
-                  { slug: 'united-kingdom', label: 'United Kingdom' },
-                  { slug: 'france', label: 'France' }
-                ].map((country) => (
-                  <Link
-                    key={country.slug}
-                    href={`/exhibition-stands/${country.slug}`}
-                    className="group flex items-center gap-3 text-gray-700 hover:text-blue-600 transition-colors"
-                  >
-                    <FiArrowRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
-                    <span className="text-base">
-                      {country.label} Exhibition Stands
-                    </span>
-                  </Link>
-                ))}
-              </nav>
-            </div>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* CTA - Controlled and Quiet */}
-      <section className="bg-gradient-to-br from-slate-50 to-blue-50/30 border-t border-gray-200">
-        <div className="max-w-3xl mx-auto px-6 sm:px-8 lg:px-12 py-16 md:py-20 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-            Planning an Exhibition?
-          </h2>
-          <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-            Get free quotes from verified exhibition stand builders worldwide.
-          </p>
-          <Link href="/quote">
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-base shadow-sm">
-              Get Free Quotes
-            </Button>
-          </Link>
+      {/* Essential guides */}
+      <section className="bg-[#141414] px-6 py-16 text-white md:px-10 md:py-32">
+        <div className="mx-auto max-w-[1400px]">
+          <Eyebrow light>Essential guides</Eyebrow>
+          <WordReveal text="Start with the essentials" className={h2} />
+          <div className="mt-12 grid gap-4 md:mt-16 md:gap-6 lg:grid-cols-3">
+            {featuredArticles.map((article, i) => (
+              <Reveal key={article.slug} delay={i * 0.06}>
+                <Link href={`/blog/${article.slug}`} className="group flex h-full flex-col border border-white/15 bg-white/[0.03] p-7 transition-colors duration-500 hover:border-[#E03A3A] md:p-9">
+                  <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.22em]">
+                    <span className="text-[#EC6A6A]">{article.category}</span>
+                    <span className="text-white/60">{pad(i)}</span>
+                  </div>
+                  <h3 className="mt-8 text-2xl font-light leading-tight tracking-tight md:text-3xl">{article.title}</h3>
+                  <p className="mt-5 flex-1 text-sm leading-relaxed text-white/70">{article.excerpt}</p>
+                  <div className="mt-8 flex items-center justify-between border-t border-white/15 pt-5 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/70">
+                    <span>{article.readTime}</span>
+                    <span className="transition-transform duration-500 group-hover:translate-x-1">Read →</span>
+                  </div>
+                </Link>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </section>
-    </div>
+
+      {/* Latest */}
+      <section className="bg-white px-6 py-16 md:px-10 md:py-32">
+        <div className="mx-auto max-w-[1400px]">
+          <Eyebrow>Latest insights</Eyebrow>
+          <WordReveal text="Recent articles" className={h2} />
+          <div className="mt-12 border-t border-[#252525] md:mt-16">
+            {recentArticles.map((article, i) => (
+              <Reveal key={article.slug} y={16} delay={Math.min(i, 4) * 0.04}>
+                <Link href={`/blog/${article.slug}`} className="group grid gap-3 border-b border-[#252525]/10 py-7 transition-colors duration-500 hover:bg-[#F5F6F7] md:grid-cols-12 md:items-center md:gap-6">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#E03A3A] md:col-span-2">{article.category}</div>
+                  <h3 className="text-xl font-light tracking-tight md:col-span-6 md:text-2xl">{article.title}</h3>
+                  <div className="text-sm text-[#252525]/65 md:col-span-3">
+                    {article.readTime} · {new Date(article.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                  </div>
+                  <div className="hidden text-right transition-transform duration-500 group-hover:translate-x-1 md:col-span-1 md:block">→</div>
+                </Link>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Internal links */}
+      <section className="bg-[#F0EDE8] px-6 py-16 md:px-10 md:py-24">
+        <div className="mx-auto grid max-w-[1400px] gap-12 lg:grid-cols-2 lg:gap-20">
+          <div>
+            <Eyebrow>City guides</Eyebrow>
+            <nav className="mt-8 border-t border-[#252525]">
+              {['cologne', 'berlin', 'hamburg', 'dubai', 'las-vegas'].map((city) => (
+                <Link
+                  key={city}
+                  href={`/exhibition-stands/${city === 'dubai' ? 'united-arab-emirates/' : city === 'las-vegas' ? 'united-states/' : 'germany/'}${city}`}
+                  className="group flex items-center justify-between border-b border-[#252525]/10 py-4 capitalize transition-colors hover:text-[#E03A3A]"
+                >
+                  {city.replace(/-/g, ' ')} exhibition stands
+                  <span className="transition-transform duration-500 group-hover:translate-x-1">→</span>
+                </Link>
+              ))}
+            </nav>
+          </div>
+          <div>
+            <Eyebrow>By country</Eyebrow>
+            <nav className="mt-8 border-t border-[#252525]">
+              {[
+                { slug: 'germany', label: 'Germany' },
+                { slug: 'united-states', label: 'United States' },
+                { slug: 'united-arab-emirates', label: 'United Arab Emirates' },
+                { slug: 'united-kingdom', label: 'United Kingdom' },
+                { slug: 'france', label: 'France' },
+              ].map((country) => (
+                <Link
+                  key={country.slug}
+                  href={`/exhibition-stands/${country.slug}`}
+                  className="group flex items-center justify-between border-b border-[#252525]/10 py-4 transition-colors hover:text-[#E03A3A]"
+                >
+                  {country.label} exhibition stands
+                  <span className="transition-transform duration-500 group-hover:translate-x-1">→</span>
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="bg-[#E03A3A] px-6 py-16 text-white md:px-10 md:py-28">
+        <Reveal className="mx-auto grid max-w-[1400px] gap-8 md:grid-cols-[1fr_auto] md:items-end">
+          <div>
+            <h2 className="max-w-[16ch] text-[clamp(2.25rem,5vw,4.5rem)] font-light leading-[1] tracking-[-0.04em]">Planning an exhibition?</h2>
+            <p className="mt-5 max-w-xl text-white/90">Get free quotes from verified exhibition stand builders worldwide.</p>
+          </div>
+          <Link href="/quote" className="whitespace-nowrap bg-[#141414] px-8 py-4 text-center text-[11px] font-semibold uppercase tracking-[0.25em] transition-colors hover:bg-white hover:text-[#252525]">
+            Get free quotes
+          </Link>
+        </Reveal>
+      </section>
+    </main>
   );
 }

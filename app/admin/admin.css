@@ -1,0 +1,39 @@
+/* Admin shell theme + mobile safety net — applies to every /admin sub page */
+.admin-dashboard {
+  --admin-red: #E03A3A;
+  --admin-ink: #141414;
+}
+.admin-dashboard main { background: #F0EDE8; }
+.admin-dashboard h1, .admin-dashboard h2, .admin-dashboard h3 { letter-spacing: -0.02em; }
+
+/* sharper, on-brand surfaces */
+.admin-dashboard main [class*="rounded-"]:not(.rounded-full):not(.rounded-none) { border-radius: 2px; }
+.admin-dashboard main .shadow-sm, .admin-dashboard main .shadow-md, .admin-dashboard main .shadow-lg { box-shadow: 0 1px 2px rgba(20,20,20,.06); }
+
+/* blue accents -> brand red */
+.admin-dashboard .bg-blue-500, .admin-dashboard .bg-blue-600, .admin-dashboard .bg-indigo-600 { background-color: var(--admin-red); }
+.admin-dashboard .hover\:bg-blue-600:hover, .admin-dashboard .hover\:bg-blue-700:hover { background-color: var(--admin-ink); }
+.admin-dashboard .text-blue-500, .admin-dashboard .text-blue-600, .admin-dashboard .text-blue-700 { color: var(--admin-red); }
+.admin-dashboard .border-blue-500, .admin-dashboard .border-blue-600 { border-color: var(--admin-red); }
+.admin-dashboard .bg-blue-50 { background-color: rgba(224,58,58,.06); }
+.admin-dashboard input:focus-visible, .admin-dashboard select:focus-visible, .admin-dashboard textarea:focus-visible,
+.admin-dashboard button:focus-visible, .admin-dashboard a:focus-visible { outline: 2px solid var(--admin-red); outline-offset: 2px; }
+
+/* never let wide content break the viewport */
+.admin-dashboard main table { display: block; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.admin-dashboard main th { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; white-space: nowrap; }
+.admin-dashboard main img, .admin-dashboard main video, .admin-dashboard main iframe { max-width: 100%; height: auto; }
+.admin-dashboard main input, .admin-dashboard main select, .admin-dashboard main textarea { max-width: 100%; }
+.admin-dashboard main pre, .admin-dashboard main code { overflow-x: auto; max-width: 100%; }
+.admin-dashboard main [role="tablist"] { max-width: 100%; overflow-x: auto; }
+
+@media (max-width: 767px) {
+  .admin-dashboard main .grid.grid-cols-3,
+  .admin-dashboard main .grid.grid-cols-4,
+  .admin-dashboard main .grid.grid-cols-5,
+  .admin-dashboard main .grid.grid-cols-6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .admin-dashboard main .flex.justify-between { flex-wrap: wrap; gap: .5rem; }
+  .admin-dashboard main [role="dialog"] { max-width: calc(100vw - 1.5rem); }
+  .admin-dashboard main h1 { font-size: 1.5rem; line-height: 1.2; }
+  .admin-dashboard main .text-4xl, .admin-dashboard main .text-3xl { font-size: 1.5rem; line-height: 1.2; }
+}

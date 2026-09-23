@@ -114,7 +114,7 @@ function SidebarLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
       target={item.external ? "_blank" : undefined}
       rel={item.external ? "noopener noreferrer" : undefined}
       className={cn(
-        "flex items-center gap-3 px-4 py-2.5 rounded transition-all duration-200 group",
+        "flex items-center gap-3 px-4 py-2.5 transition-all duration-200 group",
         isActive
           ? "bg-white/10 border-l-4 border-[#E03A3A] text-white font-semibold"
           : "text-slate-400 hover:bg-white/5 hover:text-white border-l-4 border-transparent"
@@ -190,10 +190,10 @@ export function SidebarBody() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-72 bg-[#252525] flex-col h-full text-slate-300 border-r border-[#252525]/20 shrink-0">
+      <aside className="hidden md:flex w-72 bg-[#141414] flex-col h-full text-slate-300 border-r border-white/10 shrink-0">
         {/* Logo / Header */}
         <div className="p-8 flex items-center gap-3 shrink-0">
-          <div className="size-10 bg-[#E03A3A] flex items-center justify-center rounded-lg shadow-lg">
+          <div className="size-10 bg-[#E03A3A] flex items-center justify-center shadow-lg">
             <span className="material-symbols-outlined text-white text-2xl">architecture</span>
           </div>
           <div>
@@ -234,11 +234,13 @@ export function SidebarBody() {
 
 function MobileSidebar() {
   const { open, setOpen } = useSidebar();
+  const pathname = usePathname();
+  React.useEffect(() => { setOpen(false); }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>
       {/* Mobile header bar */}
-      <div className="h-12 px-4 py-3 flex md:hidden items-center justify-between bg-[#252525] w-full border-b border-white/5">
+      <div className="h-12 px-4 flex md:hidden shrink-0 items-center justify-between bg-[#141414] w-full border-b border-white/5">
         <div className="flex items-center gap-2">
           <div className="size-7 bg-[#E03A3A] flex items-center justify-center rounded">
             <span className="material-symbols-outlined text-white text-base">architecture</span>
@@ -246,7 +248,8 @@ function MobileSidebar() {
           <span className="text-white text-sm font-bold">Stands Zone</span>
         </div>
         <button
-          className="text-slate-300 hover:text-white transition-colors"
+          aria-label="Toggle menu"
+          className="flex size-10 items-center justify-center text-slate-300 hover:text-white transition-colors"
           onClick={() => setOpen(!open)}
         >
           <span className="material-symbols-outlined">{open ? "close" : "menu"}</span>
@@ -259,7 +262,7 @@ function MobileSidebar() {
           {/* Backdrop */}
           <div className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} />
           {/* Panel */}
-          <aside className="absolute left-0 top-0 h-full w-72 bg-[#252525] flex flex-col text-slate-300 shadow-2xl">
+          <aside className="absolute left-0 top-0 h-full w-[85vw] max-w-72 bg-[#141414] flex flex-col text-slate-300 shadow-2xl">
             <div className="p-6 flex items-center justify-between border-b border-white/5">
               <div className="flex items-center gap-2">
                 <div className="size-8 bg-[#E03A3A] flex items-center justify-center rounded-lg">

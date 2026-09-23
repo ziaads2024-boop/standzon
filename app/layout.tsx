@@ -11,6 +11,7 @@ import DeferredMonitoring from '@/components/DeferredMonitoring';
 import NonCriticalScripts from '@/components/NonCriticalScripts';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import AppWrapper from '@/components/AppWrapper';
+import { getFooterSettings } from '@/lib/data/footerSettings';
 import JsonLd from '@/components/JsonLd';
 import { getOrganizationSchema, getWebsiteSchema } from '@/lib/seo/structuredData';
 // GlobalTypography temporarily disabled due to dev chunk issue
@@ -101,11 +102,12 @@ export const metadata: Metadata = {
   }
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const initialFooter = await getFooterSettings();
   return (
     <html lang="en" className="scroll-smooth h-full m-0 p-0" suppressHydrationWarning>
       <head>
@@ -207,7 +209,7 @@ export default function RootLayout({
         <ThemeProvider>
           <CriticalResourcePreloader />
           {/* <GlobalTypography /> */}
-          <AppWrapper>
+          <AppWrapper initialFooter={initialFooter}>
             {children}
           </AppWrapper>
           <Toaster />

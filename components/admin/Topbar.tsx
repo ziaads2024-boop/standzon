@@ -58,8 +58,8 @@ export default function Topbar() {
   return (
     <div className="w-full flex items-center justify-between">
       {/* Left side: page title + status */}
-      <div className="flex items-center gap-6">
-        <h2 className="text-xl font-bold tracking-tight text-[#252525]">{getPageTitle()}</h2>
+      <div className="flex min-w-0 items-center gap-6">
+        <h2 className="truncate text-base font-bold tracking-tight text-[#252525] md:text-xl">{getPageTitle()}</h2>
         <div className="h-6 w-px bg-slate-200 hidden sm:block" />
         <div className="hidden sm:flex items-center gap-2">
           <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20" />
@@ -68,7 +68,7 @@ export default function Topbar() {
       </div>
 
       {/* Right side: search, notifications, profile */}
-      <div className="flex items-center gap-3">
+      <div className="flex shrink-0 items-center gap-2 md:gap-3">
         {/* Global Search */}
         <div className="relative hidden md:block">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
@@ -84,7 +84,7 @@ export default function Topbar() {
         {/* Notifications */}
         <div className="relative">
           <button
-            className="size-10 flex items-center justify-center rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors relative"
+            className="size-9 md:size-10 flex items-center justify-center rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors relative"
             onClick={() => {
               setIsNotificationsOpen(!isNotificationsOpen);
               setIsProfileOpen(false);
@@ -96,7 +96,7 @@ export default function Topbar() {
 
           {/* Notifications Dropdown */}
           {isNotificationsOpen && (
-            <div className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-xl shadow-lg z-50">
+            <div className="absolute right-0 mt-2 w-[min(20rem,calc(100vw-1.5rem))] bg-white border border-slate-200 rounded-xl shadow-lg z-50">
               <div className="p-4 border-b border-slate-100">
                 <h3 className="font-bold text-[#252525]">Notifications</h3>
               </div>
@@ -147,7 +147,7 @@ export default function Topbar() {
 
           {/* Profile Dropdown */}
           {isProfileOpen && (
-            <div className="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-lg z-50">
+            <div className="absolute right-0 mt-2 w-[min(16rem,calc(100vw-1.5rem))] bg-white border border-slate-200 rounded-xl shadow-lg z-50">
               <div className="p-4 border-b border-slate-100">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full overflow-hidden border-2 border-slate-200 bg-slate-100 flex items-center justify-center">

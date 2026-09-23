@@ -8,12 +8,34 @@ import { getAllBuilders, getBuilderById, createBuilder, updateBuilder, deleteBui
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
+    const action = searchParams.get('action');
     const limit = searchParams.get('limit');
     const offset = searchParams.get('offset') || '0';
-    
+
     console.log('API: Fetching all builders');
     const builders = await getAllBuilders();
-    
+
+    if (action === 'countries') {
+      const byCountry = new Map<string, { count: number; ratingSum: number; ratingCount: number }>();
+      for (const b of builders as any[]) {
+        const country = b.headquarters_country;
+        if (!country) continue;
+        const entry = byCountry.get(country) || { count: 0, ratingSum: 0, ratingCount: 0 };
+        entry.count += 1;
+        if (typeof b.rating === 'number') {
+          entry.ratingSum += b.rating;
+          entry.ratingCount += 1;
+        }
+        byCountry.set(country, entry);
+      }
+      const data = Array.from(byCountry.entries()).map(([name, v]) => ({
+        name,
+        builderCount: v.count,
+        averageRating: v.ratingCount > 0 ? v.ratingSum / v.ratingCount : 0,
+      }));
+      return NextResponse.json({ success: true, data });
+    }
+
     // Apply pagination if requested
     let result = builders;
     if (limit) {

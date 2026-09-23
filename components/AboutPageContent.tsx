@@ -1,462 +1,261 @@
 "use client";
 
-import ClientPageWithBreadcrumbs from "@/components/ClientPageWithBreadcrumbs";
-import TradeStyleBanner from "@/components/TradeStyleBanner";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  FiUsers,
-  FiGlobe,
-  FiTrendingUp,
-  FiCheckCircle,
-  FiStar,
-  FiShield,
-  FiClock,
-  FiHeart,
-} from "react-icons/fi";
 import React, { useEffect, useMemo, useState } from "react";
 import { PageContent as SavedPageContent } from "@/lib/data/storage";
+import { Eyebrow, Reveal, WordReveal } from "@/components/home-v2/motion";
+import StatsBand from "@/components/home-v2/StatsBand";
 
 const stats = [
-  {
-    icon: <FiGlobe className="w-8 h-8 text-blue-primary" />,
-    number: "40+",
-    label: "Countries Served",
-    description: "Global network spanning continents",
-  },
-  {
-    icon: <FiUsers className="w-8 h-8 text-blue-primary" />,
-    number: "500+",
-    label: "Verified Contractors",
-    description: "Pre-screened professionals",
-  },
-  {
-    icon: <FiTrendingUp className="w-8 h-8 text-blue-primary" />,
-    number: "5,000+",
-    label: "Successful Projects",
-    description: "Delivered with excellence",
-  },
-  {
-    icon: <FiStar className="w-8 h-8 text-blue-primary" />,
-    number: "4.8/5",
-    label: "Average Rating",
-    description: "Client satisfaction score",
-  },
+  { value: 40, suffix: "+", label: "Countries served" },
+  { value: 500, suffix: "+", label: "Verified contractors" },
+  { value: 5000, suffix: "+", label: "Successful projects" },
+  { value: 4.8, suffix: "/5", label: "Average rating", decimals: 1 },
 ];
 
 const values = [
-  {
-    icon: <FiShield className="w-12 h-12 text-blue-primary" />,
-    title: "Trust & Reliability",
-    description:
-      "Every contractor in our network is thoroughly vetted, certified, and continuously monitored to ensure exceptional quality and reliability.",
-  },
-  {
-    icon: <FiGlobe className="w-12 h-12 text-blue-primary" />,
-    title: "Global Reach",
-    description:
-      "From major trade show destinations to emerging markets, our extensive network ensures you have access to top talent wherever your next exhibition takes place.",
-  },
-  {
-    icon: <FiClock className="w-12 h-12 text-blue-primary" />,
-    title: "Efficiency",
-    description:
-      "Our streamlined platform saves you time and effort by connecting you directly with the right contractors for your specific needs and budget.",
-  },
-  {
-    icon: <FiHeart className="w-12 h-12 text-blue-primary" />,
-    title: "Partnership",
-    description:
-      "We don't just connect you with contractors; we build lasting relationships and provide ongoing support throughout your exhibition journey.",
-  },
+  { title: "Trust & Reliability", description: "Every contractor in our network is thoroughly vetted, certified, and continuously monitored to ensure exceptional quality and reliability." },
+  { title: "Global Reach", description: "From major trade show destinations to emerging markets, our extensive network ensures you have access to top talent wherever your next exhibition takes place." },
+  { title: "Efficiency", description: "Our streamlined platform saves you time and effort by connecting you directly with the right contractors for your specific needs and budget." },
+  { title: "Partnership", description: "We don't just connect you with contractors; we build lasting relationships and provide ongoing support throughout your exhibition journey." },
 ];
 
 const team = [
-  {
-    name: "Marcus Weber",
-    role: "Founder & CEO",
-    bio: "15+ years in exhibition industry, former trade show director at major European venues",
-    specialties: [
-      "Business Strategy",
-      "Industry Relations",
-      "Global Expansion",
-    ],
-  },
-  {
-    name: "Sarah Chen",
-    role: "Head of Operations",
-    bio: "Operations expert with background in international logistics and project management",
-    specialties: [
-      "Operations Management",
-      "Quality Assurance",
-      "Contractor Relations",
-    ],
-  },
-  {
-    name: "David Rodriguez",
-    role: "Technical Director",
-    bio: "Former exhibition stand designer with deep technical expertise and innovation focus",
-    specialties: ["Technical Standards", "Innovation", "Design Excellence"],
-  },
-  {
-    name: "Emma Thompson",
-    role: "Client Success Manager",
-    bio: "Client relationship specialist ensuring exceptional experience throughout the journey",
-    specialties: [
-      "Client Relations",
-      "Support Services",
-      "Success Optimization",
-    ],
-  },
+  { name: "Marcus Weber", role: "Founder & CEO", bio: "15+ years in exhibition industry, former trade show director at major European venues", specialties: ["Business Strategy", "Industry Relations", "Global Expansion"] },
+  { name: "Sarah Chen", role: "Head of Operations", bio: "Operations expert with background in international logistics and project management", specialties: ["Operations Management", "Quality Assurance", "Contractor Relations"] },
+  { name: "David Rodriguez", role: "Technical Director", bio: "Former exhibition stand designer with deep technical expertise and innovation focus", specialties: ["Technical Standards", "Innovation", "Design Excellence"] },
+  { name: "Emma Thompson", role: "Client Success Manager", bio: "Client relationship specialist ensuring exceptional experience throughout the journey", specialties: ["Client Relations", "Support Services", "Success Optimization"] },
 ];
 
 const process = [
-  {
-    step: "1",
-    title: "Submit Your Requirements",
-    description:
-      "Tell us about your exhibition needs, budget, timeline, and preferences through our simple online form.",
-  },
-  {
-    step: "2",
-    title: "Receive Matched Proposals",
-    description:
-      "Get up to 5 customized proposals from pre-vetted contractors who specialize in your industry and location.",
-  },
-  {
-    step: "3",
-    title: "Compare & Choose",
-    description:
-      "Review detailed proposals, portfolios, and ratings to select the perfect partner for your exhibition project.",
-  },
-  {
-    step: "4",
-    title: "Project Success",
-    description:
-      "Work directly with your chosen contractor while we provide ongoing support to ensure project success.",
-  },
+  { step: "1", title: "Submit your requirements", description: "Tell us about your exhibition needs, budget, timeline, and preferences through our simple online form." },
+  { step: "2", title: "Receive matched proposals", description: "Get up to 5 customized proposals from pre-vetted contractors who specialize in your industry and location." },
+  { step: "3", title: "Compare & choose", description: "Review detailed proposals, portfolios, and ratings to select the perfect partner for your exhibition project." },
+  { step: "4", title: "Project success", description: "Work directly with your chosen contractor while we provide ongoing support to ensure project success." },
 ];
 
+const pad = (i: number) => String(i + 1).padStart(2, "0");
+
 export default function AboutPageContent() {
-  console.log("About Page: Page loaded");
   const [saved, setSaved] = useState<SavedPageContent | null>(null);
 
   useEffect(() => {
-    (async () => {
+    const load = async () => {
       try {
-        const res = await fetch(
-          "/api/admin/pages-editor?action=get-content&path=%2Fabout",
-          { cache: "no-store" }
-        );
+        const res = await fetch("/api/admin/pages-editor?action=get-content&path=%2Fabout", { cache: "no-store" });
         const data = await res.json();
         if (data?.success && data?.data) setSaved(data.data);
       } catch {}
-    })();
-  }, []);
-
-  // Listen for admin updates and refetch saved content in real-time
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent)?.detail as
-        | { pageId?: string; path?: string }
-        | undefined;
-      if (!detail?.pageId || detail.pageId === "about" || detail?.path === "/about") {
-        (async () => {
-          try {
-            const res = await fetch(
-              "/api/admin/pages-editor?action=get-content&path=%2Fabout",
-              { cache: "no-store" }
-            );
-            const data = await res.json();
-            if (data?.success && data?.data) setSaved(data.data);
-          } catch {}
-        })();
-      }
     };
-    if (typeof window !== "undefined") {
-      window.addEventListener("global-pages:updated", handler as EventListener);
-      return () => window.removeEventListener("global-pages:updated", handler as EventListener);
-    }
-    return () => {};
+    load();
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent)?.detail as { pageId?: string; path?: string } | undefined;
+      if (!detail?.pageId || detail.pageId === "about" || detail?.path === "/about") load();
+    };
+    window.addEventListener("global-pages:updated", handler as EventListener);
+    return () => window.removeEventListener("global-pages:updated", handler as EventListener);
   }, []);
 
-  const aboutHeroHeadings = [
-    "About Our Mission to Transform",
-    "Discover How We're Revolutionizing",
-    "Learn About Our Vision for",
-    "Meet the Team Behind",
-  ];
+  const s: any = (saved as any)?.sections || {};
 
-  const aboutStats = [
-    { value: "40+", label: "Countries Served" },
-    { value: "500+", label: "Verified Contractors" },
-    { value: "5,000+", label: "Successful Projects" },
-    { value: "4.8/5", label: "Average Rating" },
-  ];
-
-  const aboutButtons = [
-    {
-      text: "Get Started Today",
-      href: "/contact",
-      className:
-        "bg-white text-blue-primary hover:bg-gray-100 px-8 py-4 text-lg shadow-lg",
-    },
-    {
-      text: "Browse Contractors",
-      href: "/exhibition-stands",
-      variant: "outline" as const,
-      className:
-        "border-white text-white hover:bg-white hover:text-blue-primary px-8 py-4 text-lg",
-    },
-  ];
-
-  // Prefer content edited in "Detected Page Content" for hero description
   const bannerDescription = useMemo(() => {
     const html = (saved as any)?.content?.extra?.rawHtml || (saved as any)?.content?.introduction || "";
     if (!html || typeof html !== "string") return "";
-    const text = html
+    return html
       .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, " ")
       .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, " ")
       .replace(/<[^>]+>/g, " ")
       .replace(/\s+/g, " ")
-      .trim();
-    return text.slice(0, 220);
+      .trim()
+      .slice(0, 220);
   }, [saved]);
 
+  const heroDesc =
+    s.hero?.description ||
+    bannerDescription ||
+    "We connect exhibitors with vetted stand builders worldwide — transparent proposals, local expertise, one platform.";
+  const coreValues: any[] = s.coreValues?.length ? s.coreValues : values.map((v) => ({ heading: v.title, paragraph: v.description }));
+  const steps: any[] = s.howItWorks?.length ? s.howItWorks : process;
+  const members: any[] = s.team?.length ? s.team : team;
+  const points: string[] = s.mission?.points || [
+    "Thoroughly vetted contractor network",
+    "Transparent pricing and proposals",
+    "Ongoing project support and guidance",
+    "Global coverage with local expertise",
+  ];
+  const ctaButtons: any[] = s.cta?.buttons || [
+    { text: "Get started today", href: "/quote" },
+    { text: "Browse builders", href: "/builders" },
+  ];
+
   return (
-    <ClientPageWithBreadcrumbs className="font-inter min-h-screen">
-
-      {/* Trade Shows style banner */}
-      <TradeStyleBanner
-        badgeText="Professional Trade Show Database"
-        mainHeading={(saved as any)?.sections?.hero?.heading || "About StandsZone"}
-        highlightHeading="& Our Mission"
-        description={(saved as any)?.sections?.hero?.description || bannerDescription}
-        stats={[
-          { icon: "calendar", value: "5,000+", label: "Successful Projects" },
-          { icon: "map-pin", value: "40+", label: "Countries" },
-          { icon: "users", value: "4.8/5", label: "Avg Rating" },
-          { icon: "chart-line", value: "500+", label: "Verified Contractors" },
-        ]}
-        showSearch={false}
-      />
-
-      {/* Stats Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="flex justify-center mb-4">{stat.icon}</div>
-                <div className="text-4xl font-bold text-navy-900 mb-2">
-                  {stat.number}
-                </div>
-                <div className="text-lg font-semibold text-gray-700 mb-1">
-                  {stat.label}
-                </div>
-                <div className="text-sm text-gray-600">{stat.description}</div>
+    <main className="bg-white text-[#252525]">
+      {/* Hero */}
+      <section className="relative flex min-h-[calc(100svh-112px)] items-center overflow-hidden bg-[#141414] px-6 py-16 text-white md:px-10">
+        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:72px_72px] [mask-image:radial-gradient(ellipse_at_70%_50%,black,transparent_70%)]" />
+        <div aria-hidden className="pointer-events-none absolute -right-40 top-1/2 h-[640px] w-[640px] -translate-y-1/2 rounded-full bg-[#E03A3A]/25 blur-[140px]" />
+        <div className="relative mx-auto grid w-full max-w-[1400px] items-center gap-14 lg:grid-cols-12">
+          <div className="lg:col-span-7">
+            <Eyebrow light>About StandsZone</Eyebrow>
+            <WordReveal
+              as="h1"
+              onLoad
+              text={s.hero?.heading || "Built to make exhibiting effortless"}
+              className="mt-8 max-w-4xl text-[clamp(2.5rem,5.6vw,5.25rem)] font-light leading-[1] tracking-[-0.04em]"
+            />
+            <Reveal delay={0.2}>
+              <p className="mt-8 max-w-xl text-base font-light leading-relaxed text-white/70 md:text-lg">{heroDesc}</p>
+              <div className="mt-10 flex flex-wrap gap-3">
+                <Link href="/quote" className="bg-[#E03A3A] px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.25em] text-white transition-colors hover:bg-white hover:text-[#252525]">Get free quotes</Link>
+                <Link href="/builders" className="border border-white/30 px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.25em] transition-colors hover:border-white">Browse builders</Link>
               </div>
-            ))}
+            </Reveal>
           </div>
+          <Reveal className="hidden lg:col-span-5 lg:block" delay={0.3}>
+            <div className="border border-white/15 bg-white/[0.03] backdrop-blur-sm">
+              <div className="border-b border-white/15 px-8 py-5 text-[10px] font-semibold uppercase tracking-[0.25em] text-white/70">Why exhibitors choose us</div>
+              {["Vetted builders in every market", "Side-by-side transparent quotes", "Local teams, one point of contact"].map((t, i) => (
+                <div key={t} className="flex items-center gap-5 border-b border-white/10 px-8 py-6 last:border-b-0">
+                  <span className="text-xs font-semibold tabular-nums tracking-[0.2em] text-[#E03A3A]">{pad(i)}</span>
+                  <span className="text-lg font-light tracking-tight">{t}</span>
+                </div>
+              ))}
+            </div>
+          </Reveal>
         </div>
       </section>
 
-      {/* Mission / Saved Content Section */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-navy-900 mb-6">
-                {(saved as any)?.sections?.mission?.heading || "Our Mission"}
-              </h2>
-              {((saved as any)?.sections?.mission?.paragraph) ? (
-                <div
-                  className="prose max-w-none text-gray-700 mb-8"
-                  dangerouslySetInnerHTML={{ __html: (saved as any)?.sections?.mission?.paragraph || "" }}
-                />
+      <StatsBand stats={stats} />
+
+      {/* Mission */}
+      <section className="bg-[#F0EDE8] px-6 py-16 md:px-10 md:py-32">
+        <div className="mx-auto grid max-w-[1400px] gap-12 lg:grid-cols-12 lg:gap-16">
+          <div className="lg:col-span-7">
+            <Eyebrow>Our mission</Eyebrow>
+            <WordReveal text={s.mission?.heading || "Removing the guesswork from exhibition stands"} className="mt-6 text-[clamp(2rem,4.4vw,4rem)] font-light leading-[1.02] tracking-[-0.04em]" />
+            <Reveal delay={0.1}>
+              {s.mission?.paragraph ? (
+                <div className="prose mt-8 max-w-xl text-[#252525]/80" dangerouslySetInnerHTML={{ __html: s.mission.paragraph }} />
               ) : (
-                <>
-                  <p className="text-lg text-gray-600 mb-6">
-                    StandsZone was founded with a simple yet powerful vision: to
-                    eliminate the complexity and uncertainty from finding the
-                    right exhibition stand builder. We believe every business
-                    deserves access to exceptional exhibition experiences,
-                    regardless of size or location.
-                  </p>
-                  <p className="text-lg text-gray-600 mb-8">
-                    Our platform bridges the gap between exhibitors and
-                    top-rated contractors worldwide, ensuring quality,
-                    reliability, and success for every project. We're not just a
-                    directory – we're your trusted partner in exhibition
-                    success.
-                  </p>
-                </>
+                <div className="mt-8 max-w-xl space-y-5 text-[#252525]/80">
+                  <p>StandsZone was founded with a simple vision: to eliminate the complexity and uncertainty from finding the right exhibition stand builder. Every business deserves access to exceptional exhibition experiences, regardless of size or location.</p>
+                  <p>Our platform bridges the gap between exhibitors and top-rated contractors worldwide, ensuring quality, reliability, and success for every project. We're not just a directory — we're your trusted partner in exhibition success.</p>
+                </div>
               )}
-              <div className="space-y-4">
-                {(((saved as any)?.sections?.mission?.points as string[]) || [
-                  'Thoroughly vetted contractor network',
-                  'Transparent pricing and proposals',
-                  'Ongoing project support and guidance',
-                  'Global coverage with local expertise',
-                ]).map((pt: string, i: number) => (
-                  <div key={i} className="flex items-center space-x-3">
-                    <FiCheckCircle className="w-6 h-6 text-green-500" />
-                    <span className="text-gray-700" dangerouslySetInnerHTML={{ __html: pt }} />
-                  </div>
+              <ul className="mt-10 max-w-xl">
+                {points.map((pt, i) => (
+                  <li key={i} className="flex items-center gap-4 border-t border-[#252525]/10 py-4 last:border-b">
+                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#E03A3A]" />
+                    <span dangerouslySetInnerHTML={{ __html: pt }} />
+                  </li>
                 ))}
-              </div>
-            </div>
-            <div className="bg-gradient-to-br from-blue-primary to-blue-dark rounded-2xl p-12 text-white">
-              <div className="text-center">
-                <div className="text-6xl mb-6">🎯</div>
-                <h3 className="text-2xl font-bold mb-4">{(saved as any)?.sections?.vision?.heading || "Our Vision"}</h3>
-                <p className="text-blue-100 mb-6" dangerouslySetInnerHTML={{ __html: (saved as any)?.sections?.vision?.paragraph || "To become the world's most trusted platform for exhibition stand services, empowering businesses to create memorable brand experiences at every trade show." }} />
-                <div className="bg-white/10 rounded-lg p-4">
-                  <div className="text-3xl font-bold mb-1">2019</div>
-                  <div className="text-blue-100">Founded in Berlin</div>
-                </div>
-              </div>
-            </div>
+              </ul>
+            </Reveal>
           </div>
+          <Reveal className="lg:col-span-5" delay={0.15}>
+            <div className="flex h-full flex-col justify-between bg-[#141414] p-10 text-white md:p-14">
+              <div>
+                <Eyebrow light>{s.vision?.heading || "Our vision"}</Eyebrow>
+                <p className="mt-8 text-2xl font-light leading-snug tracking-[-0.02em] md:text-3xl" dangerouslySetInnerHTML={{ __html: s.vision?.paragraph || "To become the world's most trusted platform for exhibition stand services, empowering businesses to create memorable brand experiences at every trade show." }} />
+              </div>
+              <div className="mt-14 border-t border-white/15 pt-6">
+                <div className="text-5xl font-extralight tracking-[-0.04em]">2019</div>
+                <div className="mt-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-white/70">Founded in Berlin</div>
+              </div>
+            </div>
+          </Reveal>
         </div>
       </section>
 
-      {/* Values Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-navy-900">
-            {(saved as any)?.sections?.coreValues ? "Our Core Values" : "Our Core Values"}
-          </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {((saved as any)?.sections?.coreValues || []).length > 0
-              ? (saved as any)?.sections?.coreValues?.map((cv: any, index: number) => (
-                  <div key={index} className="text-center">
-                    <div className="flex justify-center mb-6">{values[index]?.icon}</div>
-                    <h3 className="text-xl font-semibold text-navy-900 mb-4">{cv.heading}</h3>
-                    <p className="text-gray-600" dangerouslySetInnerHTML={{ __html: cv.paragraph || "" }} />
-                  </div>
-                ))
-              : values.map((value, index) => (
-                  <div key={index} className="text-center">
-                    <div className="flex justify-center mb-6">{value.icon}</div>
-                    <h3 className="text-xl font-semibold text-navy-900 mb-4">{value.title}</h3>
-                    <p className="text-gray-600">{value.description}</p>
-                  </div>
-                ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Process Section */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-navy-900">
-            {(saved as any)?.sections?.howItWorks ? "How It Works" : "How It Works"}
-          </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {(((saved as any)?.sections?.howItWorks as any[]) || process).map((step: any, index: number) => (
-              <div key={index} className="text-center">
-                <div className="w-16 h-16 bg-blue-primary rounded-full flex items-center justify-center mx-auto mb-6">
-                  <span className="text-2xl font-bold text-white">
-                    {step.step || (index + 1)}
-                  </span>
+      {/* Values */}
+      <section className="bg-[#141414] px-6 py-16 text-white md:px-10 md:py-32">
+        <div className="mx-auto max-w-[1400px]">
+          <Eyebrow light>Core values</Eyebrow>
+          <WordReveal text="What we stand for" className="mt-6 text-[clamp(2rem,4.4vw,4rem)] font-light leading-[1.02] tracking-[-0.04em]" />
+          <div className="mt-12 grid border-t border-white/20 md:mt-16 md:grid-cols-2 lg:grid-cols-4">
+            {coreValues.map((v, i) => (
+              <Reveal key={i} delay={i * 0.06}>
+                <div className="h-full border-b border-white/10 py-8 md:pr-8 lg:border-b-0 lg:border-r lg:border-white/10 lg:px-8 lg:first:pl-0 lg:last:border-r-0">
+                  <div className="text-xs font-semibold tabular-nums tracking-[0.2em] text-[#E03A3A]">{pad(i)}</div>
+                  <h3 className="mt-6 text-2xl font-light tracking-tight">{v.heading || v.title}</h3>
+                  <p className="mt-4 text-sm leading-relaxed text-white/70" dangerouslySetInnerHTML={{ __html: v.paragraph || v.description || "" }} />
                 </div>
-                <h3 className="text-xl font-semibold text-navy-900 mb-4">
-                  {step.title || step.heading}
-                </h3>
-                {step.paragraph || step.description ? (
-                  <p className="text-gray-600" dangerouslySetInnerHTML={{ __html: step.paragraph || step.description }} />
-                ) : (
-                  <p className="text-gray-600">{step.description}</p>
-                )}
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Team Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-navy-900">
-            {(saved as any)?.sections?.team ? "Meet Our Team" : "Meet Our Team"}
-          </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {(((saved as any)?.sections?.team as any[]) || team).map((member: any, index: number) => (
-              <Card
-                key={index}
-                className="group hover:shadow-lg transition-all duration-300"
-              >
-                <CardContent className="p-6 text-center">
-                  <div className="w-24 h-24 bg-gradient-to-br from-blue-primary to-blue-dark rounded-full flex items-center justify-center mx-auto mb-6">
-                    <span className="text-2xl font-bold text-white">
-                      {member.name
-                        .split(" ")
-                        .map((n: string) => n[0])
-                        .join("")}
-                    </span>
+      {/* Process */}
+      <section className="bg-white px-6 py-16 md:px-10 md:py-32">
+        <div className="mx-auto max-w-[1400px]">
+          <Eyebrow>How it works</Eyebrow>
+          <WordReveal text="From brief to build in four steps" className="mt-6 max-w-3xl text-[clamp(2rem,4.4vw,4rem)] font-light leading-[1.02] tracking-[-0.04em]" />
+          <div className="mt-12 border-t border-[#252525] md:mt-16">
+            {steps.map((st, i) => (
+              <Reveal key={i} y={16} delay={Math.min(i, 4) * 0.04}>
+                <div className="grid gap-4 border-b border-[#252525]/10 py-8 md:grid-cols-12 md:items-baseline">
+                  <div className="text-xs font-semibold tabular-nums tracking-[0.2em] text-[#E03A3A] md:col-span-1">{pad(i)}</div>
+                  <h3 className="text-2xl font-light tracking-tight md:col-span-5 md:text-3xl">{st.title || st.heading}</h3>
+                  <p className="text-[#252525]/75 md:col-span-6" dangerouslySetInnerHTML={{ __html: st.paragraph || st.description || "" }} />
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Team */}
+      <section className="bg-[#F0EDE8] px-6 py-16 md:px-10 md:py-32">
+        <div className="mx-auto max-w-[1400px]">
+          <Eyebrow>The team</Eyebrow>
+          <WordReveal text="Meet our team" className="mt-6 text-[clamp(2rem,4.4vw,4rem)] font-light leading-[1.02] tracking-[-0.04em]" />
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 md:mt-16 md:gap-6 lg:grid-cols-4">
+            {members.map((m, i) => (
+              <Reveal key={i} delay={i * 0.06}>
+                <div className="group h-full bg-white p-8 transition-shadow duration-500 hover:shadow-[0_16px_40px_rgba(37,37,37,0.08)]">
+                  <div className="flex h-16 w-16 items-center justify-center bg-[#141414] text-lg font-light text-white transition-colors duration-500 group-hover:bg-[#E03A3A]">
+                    {String(m.name || "").split(" ").map((n: string) => n[0]).join("")}
                   </div>
-                  <h3 className="text-xl font-semibold text-navy-900 mb-2">
-                    {member.name}
-                  </h3>
-                  <div className="text-blue-primary font-medium mb-4">
-                    {member.role}
-                  </div>
-                  {member.bio ? (
-                    <p className="text-gray-600 text-sm mb-4" dangerouslySetInnerHTML={{ __html: member.bio }} />
-                  ) : (
-                    <p className="text-gray-600 text-sm mb-4">{member.bio}</p>
-                  )}
-                  {Array.isArray((member as any).specialties) && (
-                    <div className="space-y-1">
-                      {(member as any).specialties.map((specialty: string) => (
-                        <div key={specialty} className="text-xs text-gray-500">
-                          • {specialty}
-                        </div>
+                  <h3 className="mt-6 text-xl font-medium tracking-tight">{m.name}</h3>
+                  <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#E03A3A]">{m.role}</div>
+                  {m.bio && <p className="mt-4 text-sm leading-relaxed text-[#252525]/75" dangerouslySetInnerHTML={{ __html: m.bio }} />}
+                  {Array.isArray(m.specialties) && (
+                    <div className="mt-5 flex flex-wrap gap-2">
+                      {m.specialties.map((sp: string) => (
+                        <span key={sp} className="border border-[#252525]/15 px-2.5 py-1 text-[11px] text-[#252525]/70">{sp}</span>
                       ))}
                     </div>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 bg-blue-primary text-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            {(saved as any)?.sections?.cta?.heading || "Ready to Transform Your Exhibition Experience?"}
-          </h2>
-          {(saved as any)?.sections?.cta?.paragraph ? (
-            <p className="text-xl mb-8 text-blue-100" dangerouslySetInnerHTML={{ __html: (saved as any)?.sections?.cta?.paragraph }} />
-          ) : (
-            <p className="text-xl mb-8 text-blue-100">
-              Join thousands of satisfied clients who trust StandsZone to connect
-              them with the world's best exhibition stand builders. Start your
-              journey today.
-            </p>
-          )}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            {(((saved as any)?.sections?.cta?.buttons as any[]) || [
-              { text: "Get Started Today", href: "/contact" },
-              { text: "Browse Contractors", href: "/exhibition-stands" },
-            ]).map((b: any, i: number) => (
-              <Link key={i} href={b.href || "#"}>
-                <Button
-                  className={i === 0 ? "bg-white text-blue-primary hover:bg-gray-100 px-8 py-4 text-lg shadow-lg" : "border-white text-white hover:bg-white hover:text-blue-primary px-8 py-4 text-lg shadow-lg"}
-                  variant={i === 0 ? undefined : "outline"}
-                >
-                  {b.text || (i === 0 ? "Get Started Today" : "Browse Contractors")}
-                </Button>
+      {/* CTA */}
+      <section className="bg-[#E03A3A] px-6 py-16 text-white md:px-10 md:py-32">
+        <Reveal className="mx-auto grid max-w-[1400px] gap-10 md:grid-cols-[1fr_auto] md:items-end">
+          <div>
+            <h2 className="max-w-[18ch] text-[clamp(2.25rem,5vw,4.75rem)] font-light leading-[1] tracking-[-0.04em]">
+              {s.cta?.heading || "Ready to transform your exhibition experience?"}
+            </h2>
+            <p className="mt-6 max-w-xl text-white/90" dangerouslySetInnerHTML={{ __html: s.cta?.paragraph || "Join thousands of satisfied clients who trust StandsZone to connect them with the world's best exhibition stand builders." }} />
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            {ctaButtons.map((b, i) => (
+              <Link
+                key={i}
+                href={b.href || "#"}
+                className={`whitespace-nowrap px-8 py-4 text-center text-[11px] font-semibold uppercase tracking-[0.25em] transition-colors ${i === 0 ? "bg-[#141414] hover:bg-white hover:text-[#252525]" : "border border-white/60 hover:bg-white hover:text-[#252525]"}`}
+              >
+                {b.text}
               </Link>
             ))}
           </div>
-        </div>
+        </Reveal>
       </section>
-
-    </ClientPageWithBreadcrumbs>
+    </main>
   );
 }

@@ -1,9 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getArticleBySlug, getAllSlugs, blogArticles } from '@/lib/blog-data';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { FiClock, FiCalendar, FiTag, FiArrowLeft, FiArrowRight } from 'react-icons/fi';
+import { Eyebrow, Reveal } from '@/components/home-v2/motion';
 
 export async function generateStaticParams() {
     return getAllSlugs().map((slug) => ({ slug }));
@@ -38,6 +36,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     };
 }
 
+const fmt = (d: string) => new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+const label = "text-[10px] font-semibold uppercase tracking-[0.25em] text-[#252525]/65";
+
 export default async function BlogDetailPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
     const article = getArticleBySlug(slug);
@@ -46,218 +47,128 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
         notFound();
     }
 
-    // Get related articles from the same category
     const relatedArticles = blogArticles
         .filter(a => a.category === article.category && a.slug !== article.slug)
         .slice(0, 3);
 
+    const resources = [
+        { title: 'Exhibition cities', items: article.relatedCities, base: '/exhibition-stands/' },
+        { title: 'Countries', items: article.relatedCountries, base: '/exhibition-stands/' },
+        { title: 'Trade shows', items: article.relatedTradeShows, base: '/exhibitions/' },
+    ].filter((r) => r.items && r.items.length > 0);
+
     return (
-        <div className="min-h-screen bg-white">
-            {/* Back Navigation */}
-            <div className="border-b border-gray-100 bg-gray-50">
-                <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-4">
-                    <Link href="/blog" className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors">
-                        <FiArrowLeft className="mr-2 w-4 h-4" />
-                        Back to all guides
-                    </Link>
-                </div>
-            </div>
-
-            {/* Article Header */}
-            <article className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-                <header className="py-12 md:py-16 border-b border-gray-100">
-                    {/* Category */}
-                    <Badge className="bg-blue-100 text-blue-700 mb-6">
-                        {article.category}
-                    </Badge>
-
-                    {/* Title */}
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-8 leading-[1.1] tracking-tight">
-                        {article.title}
-                    </h1>
-
-                    {/* Meta Information */}
-                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-600">
-                        <div className="flex items-center gap-2">
-                            <FiCalendar className="w-4 h-4 text-slate-400" />
-                            <span className="text-slate-600">Published {new Date(article.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                        </div>
-                        {article.lastUpdated && (
-                            <div className="flex items-center gap-2 text-emerald-600 font-medium">
-                                <FiCalendar className="w-4 h-4" />
-                                <span>Updated {new Date(article.lastUpdated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                            </div>
-                        )}
-                        <div className="flex items-center gap-2">
-                            <FiClock className="w-4 h-4 text-slate-400" />
-                            <span className="text-slate-600">{article.readTime}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-slate-600">
-                            <span>By <span className="font-medium text-slate-900">{article.author}</span></span>
-                        </div>
+        <main className="bg-white text-[#252525]">
+            {/* Header */}
+            <header className="relative overflow-hidden bg-[#141414] px-6 pb-14 pt-32 text-white md:px-10 md:pb-20 md:pt-44">
+                <div aria-hidden className="pointer-events-none absolute -right-40 top-0 h-[520px] w-[520px] rounded-full bg-[#E03A3A]/25 blur-[140px]" />
+                <div className="relative mx-auto max-w-[1100px]">
+                    <Link href="/blog" className="text-[11px] font-semibold uppercase tracking-[0.25em] text-white/70 transition-colors hover:text-white">← All guides</Link>
+                    <div className="mt-10"><Eyebrow light>{article.category}</Eyebrow></div>
+                    <h1 className="mt-6 text-[clamp(2.2rem,5.5vw,4.75rem)] font-light leading-[1.02] tracking-[-0.04em]">{article.title}</h1>
+                    <div className="mt-10 flex flex-wrap gap-x-8 gap-y-3 border-t border-white/15 pt-6 text-sm text-white/70">
+                        <span>By <span className="text-white">{article.author}</span></span>
+                        <span>Published {fmt(article.date)}</span>
+                        {article.lastUpdated && <span className="text-[#EC6A6A]">Updated {fmt(article.lastUpdated)}</span>}
+                        <span>{article.readTime}</span>
                     </div>
-                </header>
+                </div>
+            </header>
 
-                {/* Executive Summary */}
-                <div className="py-12 border-b border-gray-100">
-                    <div className="bg-blue-50/50 border-l-4 border-blue-600 px-8 py-6 rounded-r-lg">
-                        <p className="text-lg text-slate-900 leading-relaxed">{article.excerpt}</p>
+            <article>
+                {/* Summary */}
+                <div className="bg-[#F0EDE8] px-6 py-12 md:px-10 md:py-16">
+                    <div className="mx-auto max-w-[1100px] border-l-2 border-[#E03A3A] pl-6 md:pl-10">
+                        <div className={label}>Summary</div>
+                        <p className="mt-4 text-xl font-light leading-relaxed tracking-tight md:text-2xl">{article.excerpt}</p>
                     </div>
                 </div>
 
-                {/* Article Content */}
-                <div className="py-12 md:py-16">
+                {/* Content */}
+                <div className="px-6 py-14 md:px-10 md:py-24">
                     <div
-                        className="prose prose-lg max-w-none text-slate-900 dark:text-slate-100 dark:prose-invert
-              [&_h2]:text-slate-900 dark:[&_h2]:text-white [&_h2]:font-bold [&_h2]:text-3xl [&_h2]:mt-12 [&_h2]:mb-6 [&_h2]:leading-tight [&_h2]:tracking-tight
-              [&_h3]:text-slate-900 dark:[&_h3]:text-white [&_h3]:font-bold [&_h3]:text-2xl [&_h3]:mt-10 [&_h3]:mb-4
-              [&_p]:text-slate-900 dark:[&_p]:text-slate-200 [&_p]:leading-relaxed [&_p]:mb-6 [&_p]:text-base
-              [&_ul]:my-6 [&_li]:text-slate-900 dark:[&_li]:text-slate-200 [&_li]:leading-relaxed
-              [&_strong]:text-slate-900 dark:[&_strong]:text-white [&_strong]:font-semibold
-              [&_a]:text-blue-600 dark:[&_a]:text-blue-400 [&_a]:hover:text-blue-800 [&_a]:underline"
+                        className="mx-auto max-w-[760px] text-[#252525] [&_a]:text-[#E03A3A] [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:text-[#141414]
+              [&_h2]:mb-5 [&_h2]:mt-14 [&_h2]:text-[clamp(1.6rem,3vw,2.25rem)] [&_h2]:font-light [&_h2]:leading-tight [&_h2]:tracking-[-0.03em]
+              [&_h3]:mb-4 [&_h3]:mt-10 [&_h3]:text-xl [&_h3]:font-medium [&_h3]:tracking-tight md:[&_h3]:text-2xl
+              [&_p]:mb-6 [&_p]:text-base [&_p]:leading-[1.8] [&_p]:text-[#252525]/85 md:[&_p]:text-lg
+              [&_ul]:my-6 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:my-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:mb-2 [&_li]:leading-relaxed [&_li]:text-[#252525]/85 [&_li]:marker:text-[#E03A3A]
+              [&_strong]:font-semibold [&_img]:h-auto [&_img]:max-w-full [&_table]:block [&_table]:overflow-x-auto [&_blockquote]:my-8 [&_blockquote]:border-l-2 [&_blockquote]:border-[#E03A3A] [&_blockquote]:pl-6 [&_blockquote]:text-xl [&_blockquote]:font-light"
                         dangerouslySetInnerHTML={{ __html: article.content }}
                     />
-                </div>
-
-                {/* Tags */}
-                <div className="py-8 border-t border-gray-100">
-                    <div className="flex items-start gap-3 flex-wrap">
-                        <FiTag className="text-slate-400 mt-1 flex-shrink-0" />
-                        <div className="flex flex-wrap gap-2">
-                            {article.tags.map((tag) => (
-                                <Badge key={tag} variant="outline" className="text-sm font-normal text-slate-700">
-                                    {tag}
-                                </Badge>
-                            ))}
-                        </div>
+                    <div className="mx-auto mt-14 flex max-w-[760px] flex-wrap gap-2 border-t border-[#252525]/15 pt-8">
+                        {article.tags.map((tag) => (
+                            <span key={tag} className="border border-[#252525]/20 px-3 py-1.5 text-xs text-[#252525]/75">{tag}</span>
+                        ))}
                     </div>
                 </div>
 
-                {/* Related Resources Section */}
-                {(article.relatedCities?.length || article.relatedCountries?.length || article.relatedTradeShows?.length) ? (
-                    <div className="py-12 border-t border-gray-100">
-                        <h2 className="text-2xl font-bold text-slate-900 mb-8">Related Resources</h2>
-
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {article.relatedCities && article.relatedCities.length > 0 && (
-                                <div>
-                                    <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">
-                                        Exhibition Cities
-                                    </h3>
-                                    <nav className="space-y-3">
-                                        {article.relatedCities.map((city) => (
-                                            <Link
-                                                key={city}
-                                                href={`/exhibition-stands/${city}`}
-                                                className="group flex items-center gap-2 text-slate-700 hover:text-blue-600 transition-colors"
-                                            >
-                                                <FiArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
-                                                <span className="capitalize">{city.replace(/-/g, ' ')}</span>
-                                            </Link>
-                                        ))}
-                                    </nav>
-                                </div>
-                            )}
-
-                            {article.relatedCountries && article.relatedCountries.length > 0 && (
-                                <div>
-                                    <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">
-                                        Countries
-                                    </h3>
-                                    <nav className="space-y-3">
-                                        {article.relatedCountries.map((country) => (
-                                            <Link
-                                                key={country}
-                                                href={`/exhibition-stands/${country}`}
-                                                className="group flex items-center gap-2 text-slate-700 hover:text-blue-600 transition-colors"
-                                            >
-                                                <FiArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
-                                                <span className="capitalize">{country.replace(/-/g, ' ')}</span>
-                                            </Link>
-                                        ))}
-                                    </nav>
-                                </div>
-                            )}
-
-                            {article.relatedTradeShows && article.relatedTradeShows.length > 0 && (
-                                <div>
-                                    <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">
-                                        Trade Shows
-                                    </h3>
-                                    <nav className="space-y-3">
-                                        {article.relatedTradeShows.map((show) => (
-                                            <Link
-                                                key={show}
-                                                href={`/exhibitions/${show}`}
-                                                className="group flex items-center gap-2 text-slate-700 hover:text-blue-600 transition-colors"
-                                            >
-                                                <FiArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
-                                                <span className="capitalize">{show.replace(/-/g, ' ')}</span>
-                                            </Link>
-                                        ))}
-                                    </nav>
-                                </div>
-                            )}
+                {/* Related resources */}
+                {resources.length > 0 && (
+                    <div className="bg-[#141414] px-6 py-14 text-white md:px-10 md:py-24">
+                        <div className="mx-auto max-w-[1100px]">
+                            <Eyebrow light>Related resources</Eyebrow>
+                            <div className="mt-10 grid gap-10 md:grid-cols-3">
+                                {resources.map((r) => (
+                                    <div key={r.title}>
+                                        <div className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#EC6A6A]">{r.title}</div>
+                                        <nav className="mt-4 border-t border-white/20">
+                                            {r.items!.map((item) => (
+                                                <Link key={item} href={`${r.base}${item}`} className="group flex items-center justify-between border-b border-white/10 py-3 capitalize text-white/85 transition-colors hover:text-white">
+                                                    {item.replace(/-/g, ' ')}
+                                                    <span className="transition-transform duration-500 group-hover:translate-x-1">→</span>
+                                                </Link>
+                                            ))}
+                                        </nav>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
-                ) : null}
+                )}
 
-                {/* Contextual CTA */}
-                <div className="py-12 border-t border-gray-100">
-                    <div className="bg-gradient-to-br from-slate-900 to-blue-900 text-white rounded-2xl p-10 md:p-12 shadow-lg">
-                        <h2 className="text-2xl md:text-3xl font-bold mb-4">
-                            {article.category === 'City Guides'
-                                ? `Ready to Exhibit?`
-                                : 'Planning Your Next Exhibition?'}
-                        </h2>
-                        <p className="text-slate-300 text-lg mb-8 leading-relaxed max-w-2xl">
-                            {article.category === 'City Guides'
-                                ? 'Connect with verified local stand builders who understand venue requirements and deliver exceptional results.'
-                                : 'Get free quotes from verified exhibition stand builders worldwide. Compare proposals and find the perfect partner.'}
-                        </p>
-                        <Link href="/quote">
-                            <Button className="bg-white text-blue-900 hover:bg-gray-100 px-8 py-6 text-base shadow-sm">
-                                Get Free Quotes
-                            </Button>
+                {/* CTA */}
+                <div className="bg-[#E03A3A] px-6 py-14 text-white md:px-10 md:py-24">
+                    <Reveal className="mx-auto grid max-w-[1100px] gap-8 md:grid-cols-[1fr_auto] md:items-end">
+                        <div>
+                            <h2 className="max-w-[18ch] text-[clamp(2rem,4.5vw,3.75rem)] font-light leading-[1.02] tracking-[-0.04em]">
+                                {article.category === 'City Guides' ? 'Ready to exhibit?' : 'Planning your next exhibition?'}
+                            </h2>
+                            <p className="mt-5 max-w-xl text-white/90">
+                                {article.category === 'City Guides'
+                                    ? 'Connect with verified local stand builders who understand venue requirements and deliver exceptional results.'
+                                    : 'Get free quotes from verified exhibition stand builders worldwide. Compare proposals and find the perfect partner.'}
+                            </p>
+                        </div>
+                        <Link href="/quote" className="whitespace-nowrap bg-[#141414] px-8 py-4 text-center text-[11px] font-semibold uppercase tracking-[0.25em] transition-colors hover:bg-white hover:text-[#252525]">
+                            Get free quotes
                         </Link>
-                    </div>
+                    </Reveal>
                 </div>
             </article>
 
-            {/* Related Articles */}
+            {/* Related articles */}
             {relatedArticles.length > 0 && (
-                <section className="bg-gray-50 border-t border-gray-200">
-                    <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-16 md:py-20">
-                        <h2 className="text-2xl font-bold text-slate-900 mb-10">Related Guides</h2>
-                        <div className="grid md:grid-cols-3 gap-8">
-                            {relatedArticles.map((related) => (
-                                <Link
-                                    key={related.slug}
-                                    href={`/blog/${related.slug}`}
-                                    className="group"
-                                >
-                                    <article className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow h-full flex flex-col">
-                                        <Badge variant="outline" className="text-xs font-medium text-slate-600 mb-4 w-fit">
-                                            {related.category}
-                                        </Badge>
-                                        <h3 className="text-lg font-semibold text-slate-900 mb-3 leading-snug group-hover:text-blue-600 transition-colors">
-                                            {related.title}
-                                        </h3>
-                                        <p className="text-sm text-slate-700 mb-4 line-clamp-3 flex-1 leading-relaxed">
-                                            {related.excerpt}
-                                        </p>
-                                        <div className="text-xs text-slate-500 flex items-center gap-3 pt-3 border-t border-gray-100">
-                                            <span>{related.readTime}</span>
-                                            <span>•</span>
-                                            <span>{new Date(related.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                <section className="bg-[#F0EDE8] px-6 py-14 md:px-10 md:py-24">
+                    <div className="mx-auto max-w-[1400px]">
+                        <Eyebrow>Related guides</Eyebrow>
+                        <div className="mt-10 grid gap-4 md:grid-cols-3 md:gap-6">
+                            {relatedArticles.map((related, i) => (
+                                <Reveal key={related.slug} delay={i * 0.06}>
+                                    <Link href={`/blog/${related.slug}`} className="group flex h-full flex-col bg-white p-7 transition-shadow duration-500 hover:shadow-[0_16px_40px_rgba(37,37,37,0.08)]">
+                                        <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#E03A3A]">{related.category}</div>
+                                        <h3 className="mt-5 text-xl font-light leading-snug tracking-tight">{related.title}</h3>
+                                        <p className="mt-3 line-clamp-3 flex-1 text-sm leading-relaxed text-[#252525]/70">{related.excerpt}</p>
+                                        <div className="mt-6 flex items-center justify-between border-t border-[#252525]/10 pt-4 text-xs text-[#252525]/65">
+                                            <span>{related.readTime} · {new Date(related.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                                            <span className="transition-transform duration-500 group-hover:translate-x-1">→</span>
                                         </div>
-                                    </article>
-                                </Link>
+                                    </Link>
+                                </Reveal>
                             ))}
                         </div>
                     </div>
                 </section>
             )}
-        </div>
+        </main>
     );
 }

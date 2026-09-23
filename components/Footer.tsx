@@ -99,8 +99,8 @@ function Column({ title, items, fallbackItems, location = false }: { title: stri
   </div>;
 }
 
-export default function Footer() {
-  const [footerData, setFooterData] = useState<FooterData | null>(null);
+export default function Footer({ initialFooter }: { initialFooter?: FooterData | null }) {
+  const [footerData, setFooterData] = useState<FooterData | null>(initialFooter || null);
 
   useEffect(() => {
     let mounted = true;
@@ -111,7 +111,7 @@ export default function Footer() {
         .catch(() => {});
     };
     const onVisible = () => { if (document.visibilityState === "visible") fetchFooter(); };
-    fetchFooter();
+    if (!initialFooter) fetchFooter();
     window.addEventListener("focus", fetchFooter);
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("footer:updated", fetchFooter);

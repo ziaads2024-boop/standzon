@@ -201,25 +201,25 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+    <div className="relative min-h-[100dvh] overflow-hidden bg-[#141414] flex flex-col justify-center px-4 py-12 sm:px-6 lg:px-8">
+      <div aria-hidden className="pointer-events-none absolute -right-40 top-0 h-[520px] w-[520px] rounded-full bg-[#E03A3A]/25 blur-[140px]" />
+      <div className="relative sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
-          <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-            <Shield className="w-8 h-8 text-red-600" />
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center bg-[#E03A3A]">
+            <Shield className="h-7 w-7 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">StandsZone</h1>
-          <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full border bg-red-50 border-red-200">
-            <Shield className="w-5 h-5 text-red-600" />
-            <span className="font-medium text-red-600">Super Admin Portal</span>
+          <h1 className="mb-3 text-3xl font-light tracking-[-0.03em] text-white">StandsZone</h1>
+          <div className="inline-flex items-center gap-2 border border-white/20 px-4 py-2">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#EC6A6A]">Super Admin Portal</span>
           </div>
-          <p className="text-gray-600 mt-2">
+          <p className="mt-3 text-white/70">
             Secure access to platform management
           </p>
         </div>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <Card className="shadow-xl border-0">
+      <div className="relative mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <Card className="rounded-none border-0 shadow-2xl">
           <CardHeader className="text-center pb-4">
             <CardTitle className="text-xl font-semibold text-gray-900">
               {loginMethod === "otp" ? (step === "email" ? "Admin Login" : "Enter OTP Code") : "Admin Password Login"}

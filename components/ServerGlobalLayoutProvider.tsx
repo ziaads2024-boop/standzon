@@ -9,13 +9,14 @@ import ClientNavigationWrapper from '@/components/ClientNavigationWrapper';
 
 interface ServerGlobalLayoutProviderProps {
   children: React.ReactNode;
+  initialFooter?: any;
 }
 
 /**
  * Client-side layout provider that conditionally renders the public site shell.
  * It detects admin routes and skips the public header/footer/breadcrumbs.
  */
-export default function ServerGlobalLayoutProvider({ children }: ServerGlobalLayoutProviderProps) {
+export default function ServerGlobalLayoutProvider({ children, initialFooter }: ServerGlobalLayoutProviderProps) {
   const pathname = usePathname();
   console.log('ServerGlobalLayoutProvider pathname:', pathname);
   const [mounted, setMounted] = useState(false);
@@ -64,7 +65,7 @@ export default function ServerGlobalLayoutProvider({ children }: ServerGlobalLay
       
       {mounted && (
         <>
-          <Footer />
+          <Footer initialFooter={initialFooter} />
           <WhatsAppFloat />
         </>
       )}

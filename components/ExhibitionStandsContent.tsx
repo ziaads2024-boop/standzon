@@ -23,15 +23,16 @@ interface CountryData {
   annualEvents: number;
 }
 
-export default function ExhibitionStandsContent() {
+export default function ExhibitionStandsContent({ initialCountries = [] }: { initialCountries?: CountryData[] }) {
   const [saved, setSaved] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedContinent, setSelectedContinent] = useState('all');
   const [expandedCountries, setExpandedCountries] = useState<Set<string>>(new Set());
-  const [countries, setCountries] = useState<CountryData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [countries, setCountries] = useState<CountryData[]>(initialCountries);
+  const [loading, setLoading] = useState(initialCountries.length === 0);
 
   useEffect(() => {
+    // Re-fetch client-side only to pick up live builder counts/ratings on top of the SSR'd list.
     loadGlobalCountriesData();
     (async () => {
       try {
