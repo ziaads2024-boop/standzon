@@ -36,8 +36,8 @@ const process = [
 
 const pad = (i: number) => String(i + 1).padStart(2, "0");
 
-export default function AboutPageContent() {
-  const [saved, setSaved] = useState<SavedPageContent | null>(null);
+export default function AboutPageContent({ initialSaved = null }: { initialSaved?: SavedPageContent | null }) {
+  const [saved, setSaved] = useState<SavedPageContent | null>(initialSaved);
 
   useEffect(() => {
     const load = async () => {
@@ -47,7 +47,6 @@ export default function AboutPageContent() {
         if (data?.success && data?.data) setSaved(data.data);
       } catch {}
     };
-    load();
     const handler = (e: Event) => {
       const detail = (e as CustomEvent)?.detail as { pageId?: string; path?: string } | undefined;
       if (!detail?.pageId || detail.pageId === "about" || detail?.path === "/about") load();

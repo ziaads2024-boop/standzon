@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import siteMetadata from '@/app/metadata.json';
 import AboutPageContent from '@/components/AboutPageContent';
 import { getServerSupabase } from '@/lib/supabase';
+import { getServerPageContent } from '@/lib/data/serverPageContent';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -63,8 +64,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
 // Server component shell that renders the client component
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const saved = await getServerPageContent('about');
   return (
-    <AboutPageContent />
+    <AboutPageContent initialSaved={saved} />
   );
 }
