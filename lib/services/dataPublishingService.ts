@@ -3,6 +3,7 @@
 
 import { GLOBAL_EXHIBITION_DATA } from '@/lib/data/globalCities';
 import { getAllExpandedCities } from '@/lib/data/expandedLocations';
+import { getCityPageUrl } from '@/lib/utils/slugUtils';
 
 export interface PublishingTask {
   id: string;
@@ -78,7 +79,7 @@ export class DataPublishingService {
 
     // Check missing cities
     allCities.forEach(city => {
-      const cityPath = `/exhibition-stands/${city.countryCode.toLowerCase()}/${city.id}`;
+      const cityPath = getCityPageUrl(city.country, city.name);
       if (!existingPages.includes(cityPath)) {
         tasks.push({
           id: `city-${city.id}`,
@@ -121,8 +122,8 @@ export class DataPublishingService {
     return [
       '/exhibition-stands/germany/berlin',
       '/exhibition-stands/germany',
-      '/exhibition-stands/uae/dubai',
-      '/exhibition-stands/uae',
+      '/exhibition-stands/united-arab-emirates/dubai',
+      '/exhibition-stands/united-arab-emirates',
       '/exhibition-stands/united-states/las-vegas',
       '/exhibition-stands/united-states',
       '/exhibition-stands/france',

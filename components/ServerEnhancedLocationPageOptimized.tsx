@@ -13,6 +13,7 @@ import { getServerSupabase } from '@/lib/supabase';
 import { getAllBuilders } from '@/lib/supabase/builders';
 import { getServerPageContent } from '@/lib/data/serverPageContent';
 import { sanitizeHtml } from '@/lib/utils/html';
+import { normalizeCountrySlug } from '@/lib/utils/slugUtils';
 
 /**
  * Server component version of EnhancedLocationPage for improved performance
@@ -68,7 +69,7 @@ export default async function ServerEnhancedLocationPage({
   const finalLocationName = locationName || city || country || 'Unknown Location';
   const finalCountryName = countryName || (isCity && country) || country || undefined;
   const displayLocation = isCity && finalCountryName ? `${finalLocationName}, ${finalCountryName}` : finalLocationName;
-  const countrySlug = slugify(finalCountryName || finalLocationName);
+  const countrySlug = normalizeCountrySlug(finalCountryName || finalLocationName);
 
   // Fetch content on the server
   let cmsData = serverCmsContent;

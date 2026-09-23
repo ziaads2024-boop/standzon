@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { FiGlobe, FiUsers, FiStar, FiMapPin, FiArrowRight, FiExternalLink } from 'react-icons/fi';
 import Link from 'next/link';
+import { getCountryPageUrl } from '@/lib/utils/slugUtils';
 
 type SectionText = { heading?: string; paragraph?: string } | undefined;
 
@@ -183,7 +184,7 @@ export default function LocationsSection({
             {currentContinent.interlinkingCountries.map((country) => (
               <Link
                 key={country}
-                href={`/exhibition-stands/${country.toLowerCase().replace(/\s+/g, '-')}`}
+                href={getCountryPageUrl(country)}
                 className="group"
               >
                 <div className="bg-white border border-slate-200 hover:border-[#E03A3A] p-4 text-center transition-all hover:shadow-md">

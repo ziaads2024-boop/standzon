@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { getCityPageUrl, getCountryPageUrl } from '@/lib/utils/slugUtils';
 import {
   Card,
   CardContent,
@@ -570,8 +571,8 @@ export function GlobalPagesManager() {
   const handleViewPage = (page: PageConfig) => {
     const url =
       page.type === "country"
-        ? `/exhibition-stands/${page.location.slug}`
-        : `/exhibition-stands/${page.location.country?.toLowerCase()}/${page.location.slug}`;
+        ? getCountryPageUrl(page.location.name || page.location.slug)
+        : getCityPageUrl(page.location.country || '', page.location.slug);
 
     window.open(url, "_blank");
   };

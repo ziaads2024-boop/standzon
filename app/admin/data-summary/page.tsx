@@ -43,6 +43,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { GLOBAL_EXHIBITION_DATA } from '@/lib/data/globalCities';
 import { getAllExpandedCities } from '@/lib/data/expandedLocations';
 import { dataPublishingService, PublishingTask } from '@/lib/services/dataPublishingService';
+import { getCityPageUrl } from '@/lib/utils/slugUtils';
 import { useToast } from '@/hooks/use-toast';
 
 interface SummaryData {
@@ -93,8 +94,8 @@ export default function DataSummaryPage() {
       const existingPages = [
         '/exhibition-stands/germany/berlin',
         '/exhibition-stands/germany',
-        '/exhibition-stands/uae/dubai',
-        '/exhibition-stands/uae',
+        '/exhibition-stands/united-arab-emirates/dubai',
+        '/exhibition-stands/united-arab-emirates',
         '/exhibition-stands/united-states/las-vegas',
         '/exhibition-stands/united-states',
         '/exhibition-stands/france',
@@ -116,7 +117,7 @@ export default function DataSummaryPage() {
 
       // Calculate missing cities
       const missingCities = allCities
-        .filter(city => !existingPages.includes(`/exhibition-stands/${city.countryCode.toLowerCase()}/${city.id}`))
+        .filter(city => !existingPages.includes(getCityPageUrl(city.country, city.name)))
         .map(city => ({
           id: city.id,
           name: city.name,

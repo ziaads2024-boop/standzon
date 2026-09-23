@@ -13,6 +13,7 @@ import {
   TrendingUp, Award, Calendar, Target, Star, Settings, Save, Plus
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { getCityPageUrl, getCountryPageUrl } from '@/lib/utils/slugUtils';
 
 interface GlobalPageStats {
   totalPages: number;
@@ -496,9 +497,9 @@ export default function WorkingGlobalPagesManager() {
                       
                       <Button size="sm" variant="outline" asChild className="text-gray-900">
                         <a 
-                          href={page.type === 'country' 
-                            ? `/exhibition-stands/${page.location.slug}` 
-                            : `/exhibition-stands/${page.location.country?.toLowerCase().replace(/\s+/g, '-')}/${page.location.slug}`
+                          href={page.type === 'country'
+                            ? getCountryPageUrl(page.location.name || page.location.slug)
+                            : getCityPageUrl(page.location.country || '', page.location.slug)
                           }
                           target="_blank"
                           rel="noopener noreferrer"

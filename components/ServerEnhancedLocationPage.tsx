@@ -17,6 +17,7 @@ import { convertToProxyUrl } from '@/lib/utils/imageProxyUtils';
 import { placeholderFor, isMissingImage } from '@/lib/utils/placeholders';
 import Image from 'next/image';
 import HeroSearchFilter from '@/components/HeroSearchFilter';
+import { normalizeCountrySlug } from '@/lib/utils/slugUtils';
 
 /**
  * Props: flexible and permissive so this component can be used server-side or client-side.
@@ -149,7 +150,7 @@ export default async function ServerEnhancedLocationPage({
   const finalLocationName = locationName || city || country || 'Unknown Location';
   const finalCountryName = countryName || (isCity && country) || country || undefined;
   const displayLocation = isCity && finalCountryName ? `${finalLocationName}, ${finalCountryName}` : finalLocationName;
-  const countrySlug = slugify(finalCountryName || finalLocationName);
+  const countrySlug = normalizeCountrySlug(finalCountryName || finalLocationName);
 
   // Fetch content on the server
   let cmsData = serverCmsContent;

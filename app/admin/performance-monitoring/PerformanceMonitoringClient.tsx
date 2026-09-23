@@ -82,7 +82,7 @@ export default function PerformanceMonitoringClient() {
             { path: '/exhibition-stands/united-states', loadTime: 2.8, cacheHit: false },
             { path: '/exhibition-stands/germany/berlin', loadTime: 1.9, cacheHit: true },
             { path: '/builders', loadTime: 1.7, cacheHit: false },
-            { path: '/exhibition-stands/uae/dubai', loadTime: 1.5, cacheHit: true },
+            { path: '/exhibition-stands/united-arab-emirates/dubai', loadTime: 1.5, cacheHit: true },
             { path: '/quote', loadTime: 1.3, cacheHit: false },
           ]
         }

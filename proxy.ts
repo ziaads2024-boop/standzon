@@ -23,14 +23,15 @@ export function proxy(request: NextRequest) {
   }
 
   // Redirect UAE routes to United Arab Emirates
-  if (pathname.startsWith('/exhibition-stands/uae')) {
+  if (pathname === '/exhibition-stands/uae' || pathname.startsWith('/exhibition-stands/uae/')) {
     const newPathname = pathname.replace('/exhibition-stands/uae', '/exhibition-stands/united-arab-emirates')
     return NextResponse.redirect(new URL(newPathname, request.url))
   }
 
-  // Also handle root /uae redirects
-  if (pathname === '/uae') {
-    return NextResponse.redirect(new URL('/united-arab-emirates', request.url))
+  // Preserve old root-level UAE links as inbound redirects only.
+  if (pathname === '/uae' || pathname.startsWith('/uae/')) {
+    const suffix = pathname.slice('/uae'.length)
+    return NextResponse.redirect(new URL(`/exhibition-stands/united-arab-emirates${suffix}`, request.url))
   }
 
   // Fix city slug inconsistencies

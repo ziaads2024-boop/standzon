@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { sanitizeHtml } from "@/lib/utils/html";
-import { normalizeCitySlug } from "@/lib/utils/slugUtils";
+import { getCountryPageUrl, normalizeCitySlug } from "@/lib/utils/slugUtils";
 import { convertToProxyUrl } from "@/lib/utils/imageProxyUtils";
 import { isMissingImage } from "@/lib/utils/placeholders";
 import HeroSearchFilter from "@/components/HeroSearchFilter";
@@ -393,7 +393,7 @@ export default function UaeLocationPage({
           <h2 className="text-2xl font-light tracking-[-0.02em] md:text-3xl">Exhibiting elsewhere in the Gulf?</h2>
           <div className="flex flex-wrap gap-2">
             {NEARBY.map((c) => (
-              <Link key={c} href={`/exhibition-stands/${c.toLowerCase().replace(/\s+/g, "-")}`} className="border border-[#252525]/25 px-5 py-3 text-sm transition-colors hover:border-[#CC2E2E] hover:bg-[#F5F6F7] hover:text-[#CC2E2E]">
+              <Link key={c} href={getCountryPageUrl(c)} className="border border-[#252525]/25 px-5 py-3 text-sm transition-colors hover:border-[#CC2E2E] hover:bg-[#F5F6F7] hover:text-[#CC2E2E]">
                 {c}
               </Link>
             ))}

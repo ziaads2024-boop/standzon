@@ -112,7 +112,7 @@ export default function Navigation() {
         { label: 'Browse Builders by Location', href: '/exhibition-stands' },
         { label: 'Germany Builders', href: '/exhibition-stands/germany' },
         { label: 'USA Builders', href: '/exhibition-stands/united-states' },
-        { label: 'UAE Builders', href: '/exhibition-stands/uae' },
+        { label: 'UAE Builders', href: '/exhibition-stands/united-arab-emirates' },
         { label: 'France Builders', href: '/exhibition-stands/france' },
       ]
     },

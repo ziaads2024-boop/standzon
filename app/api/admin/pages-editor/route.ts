@@ -5,6 +5,7 @@ import { GLOBAL_EXHIBITION_DATA } from '@/lib/data/globalCities';
 import fs from 'fs';
 import path from 'path';
 import { getServerSupabase } from '@/lib/supabase';
+import { getCityPageUrl, getCountryPageUrl } from '@/lib/utils/slugUtils';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -258,8 +259,8 @@ export async function GET(request: NextRequest) {
           const all = storageAPI.getAllPageContents();
           all.forEach((pc) => {
             const path = pc.type === 'city'
-              ? `/exhibition-stands/${(pc.location.country || '').toLowerCase()}/${pc.location.slug}`
-              : `/exhibition-stands/${pc.location.slug}`;
+              ? getCityPageUrl(pc.location.country || '', pc.location.slug)
+              : getCountryPageUrl(pc.location.name || pc.location.slug);
             pages.push({
               title: pc.hero.title || pc.seo.metaTitle || pc.location.name,
               path,
@@ -326,8 +327,8 @@ export async function GET(request: NextRequest) {
         const all = storageAPI.getAllPageContents();
         all.forEach((pc) => {
           const path = pc.type === 'city'
-            ? `/exhibition-stands/${(pc.location.country || '').toLowerCase()}/${pc.location.slug}`
-            : `/exhibition-stands/${pc.location.slug}`;
+            ? getCityPageUrl(pc.location.country || '', pc.location.slug)
+            : getCountryPageUrl(pc.location.name || pc.location.slug);
           pages.push({
             title: pc.hero.title || pc.seo.metaTitle || pc.location.name,
             path,
@@ -831,5 +832,4 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Failed to update page' }, { status: 500 });
   }
 }
-
 

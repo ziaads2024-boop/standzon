@@ -1,4 +1,6 @@
 
+import { getCityPageUrl, getCountryPageUrl } from '@/lib/utils/slugUtils';
+
 // Base organization schema for StandsZone
 export const getOrganizationSchema = () => ({
   "@context": "https://schema.org",
@@ -131,7 +133,7 @@ export const getLocationSchema = (
     "@type": isCity ? "City" : "Country",
     "name": locationName,
     "description": `Professional exhibition stand builders in ${locationName}. Find verified contractors for trade shows, exhibitions, and custom booth construction.`,
-    "url": `https://standszone.com/exhibition-stands/${country.toLowerCase().replace(/\s+/g, '-')}${city ? '/' + city.toLowerCase().replace(/\s+/g, '-') : ''}`,
+    "url": `https://standszone.com${city ? getCityPageUrl(country, city) : getCountryPageUrl(country)}`,
     "containedInPlace": isCity ? {
       "@type": "Country",
       "name": country

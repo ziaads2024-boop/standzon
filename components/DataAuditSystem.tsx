@@ -20,6 +20,7 @@ import {
   Filter, ArrowRight, ExternalLink, Crown, Sparkles
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { getCityPageUrl } from '@/lib/utils/slugUtils';
 
 interface DataCompleteness {
   totalCountries: number;
@@ -70,8 +71,8 @@ export default function DataAuditSystem() {
     const existing = [
       '/exhibition-stands/germany/berlin',
       '/exhibition-stands/germany',
-      '/exhibition-stands/uae/dubai',
-      '/exhibition-stands/uae',
+      '/exhibition-stands/united-arab-emirates/dubai',
+      '/exhibition-stands/united-arab-emirates',
       '/exhibition-stands/united-states/las-vegas',
       '/exhibition-stands/united-states',
       '/exhibition-stands/france',
@@ -110,7 +111,7 @@ export default function DataAuditSystem() {
 
       // Check cities
       allCities.forEach(city => {
-        const cityPath = `/exhibition-stands/${city.countryCode.toLowerCase()}/${city.id}`;
+        const cityPath = getCityPageUrl(city.country, city.name);
         if (!existingPages.includes(cityPath)) {
           missingCities.push(city.id);
         }

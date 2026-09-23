@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import LocationPageEditor from '@/components/LocationPageEditor';
 import { db } from '@/lib/supabase/database';
+import { getCityPageUrl, getCountryPageUrl } from '@/lib/utils/slugUtils';
 import {
   Globe, MapPin, Building2, Users, BarChart3, Search, Filter,
   RefreshCw, Zap, CheckCircle, AlertCircle, Eye, Edit, ExternalLink,
@@ -273,8 +274,8 @@ export function RealGlobalPagesManagerClient({
         metaDescription: page.seoData.description,
         keywords: page.seoData.keywords,
         canonicalUrl: page.type === 'country'
-          ? `/exhibition-stands/${page.location.slug}`
-          : `/exhibition-stands/${page.location.country?.toLowerCase().replace(/\s+/g, '-')}/${page.location.slug}`,
+          ? getCountryPageUrl(page.location.name || page.location.slug)
+          : getCityPageUrl(page.location.country || '', page.location.slug),
       },
       hero: {
         title: page.seoData.title,
@@ -557,8 +558,8 @@ export function RealGlobalPagesManagerClient({
                       <Button size="sm" variant="outline" asChild className="text-gray-900">
                         <a
                           href={page.type === 'country'
-                            ? `/exhibition-stands/${page.location.slug}`
-                            : `/exhibition-stands/${page.location.country?.toLowerCase().replace(/\s+/g, '-')}/${page.location.slug}`
+                            ? getCountryPageUrl(page.location.name || page.location.slug)
+                            : getCityPageUrl(page.location.country || '', page.location.slug)
                           }
                           target="_blank"
                           rel="noopener noreferrer"

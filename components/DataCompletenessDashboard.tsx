@@ -12,6 +12,7 @@ import {
   TrendingUp, Eye, RefreshCw, ExternalLink, BarChart3,
   Activity, Zap, Target, Crown, Sparkles
 } from 'lucide-react';
+import { getCityPageUrl } from '@/lib/utils/slugUtils';
 
 interface DataMetrics {
   totalItems: number;
@@ -55,8 +56,8 @@ export default function DataCompletenessDashboard() {
     const existingPages = [
       '/exhibition-stands/germany/berlin',
       '/exhibition-stands/germany',
-      '/exhibition-stands/uae/dubai',
-      '/exhibition-stands/uae',
+      '/exhibition-stands/united-arab-emirates/dubai',
+      '/exhibition-stands/united-arab-emirates',
       '/exhibition-stands/united-states/las-vegas',
       '/exhibition-stands/united-states',
       '/exhibition-stands/france',
@@ -67,8 +68,8 @@ export default function DataCompletenessDashboard() {
       !existingPages.includes(`/exhibition-stands/${country.slug}`)
     );
 
-    const missingCities = allCities.filter(city => 
-      !existingPages.includes(`/exhibition-stands/${city.countryCode.toLowerCase()}/${city.id}`)
+    const missingCities = allCities.filter(city =>
+      !existingPages.includes(getCityPageUrl(city.country, city.name))
     );
 
     const totalItems = allCountries.length + allCities.length;

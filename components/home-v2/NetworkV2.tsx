@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { CONTINENTS } from "./locationsData";
 import { Eyebrow, Reveal, WordReveal, EASE } from "./motion";
+import { getCountryPageUrl } from "@/lib/utils/slugUtils";
 
 type SectionText = { heading?: string; paragraph?: string } | undefined;
 
@@ -120,7 +121,7 @@ export default function NetworkV2({
             {cur.interlinkingCountries.map((c) => (
               <Link
                 key={c}
-                href={`/exhibition-stands/${c.toLowerCase().replace(/\s+/g, "-")}`}
+                href={getCountryPageUrl(c)}
                 className="border border-[#252525]/20 px-5 py-3 text-sm transition-colors duration-300 hover:border-[#E03A3A] hover:bg-[#E03A3A] hover:text-white"
               >
                 {c}

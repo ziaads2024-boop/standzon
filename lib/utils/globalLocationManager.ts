@@ -1,4 +1,5 @@
 import { GLOBAL_EXHIBITION_DATA, type ExhibitionCountry, type ExhibitionCity } from '@/lib/data/globalCities';
+import { getCityPageUrl, getCountryPageUrl } from '@/lib/utils/slugUtils';
 
 export interface LocationSelection {
   continent?: string;
@@ -468,9 +469,9 @@ export class GlobalLocationManager {
   // Generate SEO-friendly URLs
   static generateLocationURL(country?: string, city?: string): string {
     if (city && country) {
-      return `/exhibition-stands/${country}/${city}`;
+      return getCityPageUrl(country, city);
     } else if (country) {
-      return `/exhibition-stands/${country}`;
+      return getCountryPageUrl(country);
     } else {
       return '/exhibition-stands';
     }

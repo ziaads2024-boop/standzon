@@ -14,6 +14,7 @@ import {
 import { Exhibition } from '@/lib/data/exhibitions';
 import { exhibitionBuilders, BuilderMatchingService } from '@/lib/data/exhibitionBuilders';
 import Link from 'next/link';
+import { getCityPageUrl } from '@/lib/utils/slugUtils';
 
 interface ExhibitionPageProps {
   exhibitionSlug: string;
@@ -80,9 +81,7 @@ export default function ExhibitionPage({ exhibitionSlug, initialExhibition }: Ex
   };
 
   const handleFindBoothBuilders = () => {
-    const countrySlug = exhibition.country.toLowerCase().replace(/\s+/g, '-');
-    const citySlug = exhibition.city.toLowerCase().replace(/\s+/g, '-');
-    window.open(`/exhibition-stands/${countrySlug}/${citySlug}`, '_blank');
+    window.open(getCityPageUrl(exhibition.country, exhibition.city), '_blank');
   };
 
   const handleAddToCalendar = () => {
