@@ -1,24 +1,42 @@
-import { db } from "@/lib/supabase/database";
-import { industries } from "@/lib/data/industries";
-import { mapTradeShowDBToUI } from "@/lib/utils/tradeShowMapping";
-import TradeShowsClient from "@/components/trade-shows/TradeShowsClient";
 import { Metadata } from "next";
+import ExhibitionCalendarClient from "@/components/exhibitions/ExhibitionCalendarClient";
+import { GLOBAL_EXHIBITION_DATA } from "@/lib/data/globalCities";
 
 export const metadata: Metadata = {
-  title: "Global Trade Shows & Exhibitions Directory | StandZone",
-  description: "Browse our comprehensive directory of global trade shows and exhibitions. Find upcoming events, venue details, and connect with expert exhibition stand builders.",
-  keywords: ["trade shows", "exhibitions", "expo directory", "exhibition stands", "booth builders"],
+  title: "Global Trade Show & Exhibition Calendar | StandZone",
+  description:
+    "Browse source-verified upcoming trade shows and exhibitions across 58 countries and 204 cities. Filter by country, city, year, and industry.",
+  keywords: [
+    "trade shows",
+    "exhibition calendar",
+    "trade show calendar",
+    "country wise exhibitions",
+    "exhibition dates 2026",
+  ],
 };
 
-// ISR: Disabled temporarily for debugging, usually 3600
-export const revalidate = 0;
+export const revalidate = 3600;
 
-export default async function TradeShowsPage() {
-  const dbTradeShows = await db.getTradeShows();
-  console.log(`🔍 TradeShowsPage: Fetched ${dbTradeShows?.length || 0} shows from Supabase`);
+export default function TradeShowsPage() {
+  const totalCountries = GLOBAL_EXHIBITION_DATA.countries.length;
+  const totalCities = GLOBAL_EXHIBITION_DATA.cities.length;
 
-  const tradeShows = (dbTradeShows || []).map(mapTradeShowDBToUI);
-  console.log(`🔍 TradeShowsPage: Mapped ${tradeShows.length} shows for UI`);
-
-  return <TradeShowsClient initialTradeShows={tradeShows} industries={industries} />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            name: "Global Trade Show & Exhibition Calendar",
+            description: `Verified exhibition calendar covering ${totalCountries} countries and ${totalCities} cities`,
+            url: "https://standszone.com/trade-shows",
+            isPartOf: { "@type": "WebSite", name: "StandZone", url: "https://standszone.com" },
+          }),
+        }}
+      />
+      <ExhibitionCalendarClient />
+    </>
+  );
 }

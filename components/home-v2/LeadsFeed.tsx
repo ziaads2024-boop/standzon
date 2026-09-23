@@ -67,11 +67,11 @@ export default async function LeadsFeed({
             {leads.slice(0, 8).map((l, i) => (
               <Reveal key={`${l.id}-${i}`} y={16} delay={Math.min(i, 4) * 0.04}>
                 <div className="group grid grid-cols-2 gap-x-4 gap-y-2 border-t border-[#252525]/10 py-6 transition-colors duration-500 hover:bg-[#F5F6F7] md:grid-cols-12 md:items-center md:px-0 md:hover:px-4 md:transition-[padding,background-color]">
-                  <div className="col-span-2 text-xl font-light tracking-tight md:col-span-5 md:text-2xl">{l.exhibitionName || "Event not specified"}</div>
-                  <div className="text-sm text-[#252525]/80 md:col-span-2">{l.standSize || "—"}</div>
-                  <div className="text-sm font-medium md:col-span-2">{l.budget || "—"}</div>
-                  <div className="text-sm text-[#252525]/65 md:col-span-1">{fmt(l.submittedAt)}</div>
-                  <div className="col-span-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] md:justify-end">
+                  <div className="col-span-2 min-w-0 break-words text-lg font-light tracking-tight md:col-span-5 md:text-2xl">{l.exhibitionName || "Event not specified"}</div>
+                  <div className="min-w-0 truncate text-sm text-[#252525]/80 md:col-span-2">{l.standSize || "—"}</div>
+                  <div className="min-w-0 truncate text-sm font-medium md:col-span-2">{l.budget || "—"}</div>
+                  <div className="min-w-0 truncate text-sm text-[#252525]/65 md:col-span-1">{fmt(l.submittedAt)}</div>
+                  <div className="col-span-2 flex min-w-0 items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] md:justify-end">
                     {l.status && (
                       <>
                         <span className={`h-1.5 w-1.5 rounded-full ${statusDot(l.status)}`} />

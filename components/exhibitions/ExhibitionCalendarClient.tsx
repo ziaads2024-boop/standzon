@@ -3,11 +3,12 @@
 import { useEffect, useState, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FiCalendar, FiMapPin, FiExternalLink, FiCheckCircle, FiFilter, FiGlobe, FiSearch } from "react-icons/fi";
+import { FiCalendar, FiMapPin, FiExternalLink, FiCheckCircle, FiFilter, FiGlobe, FiSearch, FiArrowUpRight } from "react-icons/fi";
 import { GLOBAL_EXHIBITION_DATA } from "@/lib/data/globalCities";
 
 interface ExhibitionRow {
@@ -149,62 +150,57 @@ export default function ExhibitionCalendarClient() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#FAFAF9] text-[#252525]">
       {/* Hero */}
-      <section className="pt-20 pb-12 bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-sm font-medium mb-6">
-            <FiGlobe className="w-4 h-4 mr-2 text-emerald-400" />
-            Country + City Wise Exhibition Calendar
+      <section className="bg-[#141414] pb-14 pt-28 text-white md:pt-32">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="mx-auto max-w-[1400px] px-6 md:px-10"
+        >
+          <div className="flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.28em] text-[#EC6A6A]">
+            <span className="h-px w-9 bg-[#E03A3A]" />
+            Live, source-verified data
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            {isUAE ? "UAE Exhibition Calendar" : "Global Exhibition Calendar"}
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
-              {isUAE ? "7 Emirates • All Venues • 2026-2027" : `${allCountries.length} Countries • ${GLOBAL_EXHIBITION_DATA.cities.length} Cities • 2026-2027`}
-            </span>
+          <h1 className="mt-7 max-w-2xl text-[clamp(2.2rem,5vw,4.2rem)] font-light leading-[1.02] tracking-[-0.03em]">
+            {isUAE ? "UAE exhibition calendar" : "Global exhibition calendar"}
           </h1>
-          <p className="text-lg text-gray-300 max-w-3xl mx-auto">
+          <p className="mt-5 max-w-xl text-sm font-light leading-relaxed text-white/60 md:text-base">
             {isUAE
-              ? "Deep coverage of all UAE emirates — Dubai, Abu Dhabi, Sharjah, Ajman, Fujairah, Ras Al Khaimah, Umm Al Quwain — sourced only from DWTC, ADNEC, Expo Centre Sharjah & UFI-certified calendars. Filter by emirate to see this year + next year shows."
-              : "Genuine exhibitions sourced only from official venue & organizer sites and UFI-certified calendars. Filter by country/city to see only the shows that matter to you. Every entry links to its official source."}
+              ? "Every UAE emirate — Dubai, Abu Dhabi, Sharjah, Ajman, Fujairah, Ras Al Khaimah, Umm Al Quwain — sourced only from DWTC, ADNEC, Expo Centre Sharjah & UFI-certified calendars."
+              : "Genuine exhibitions sourced only from official venue & organizer sites and UFI-certified calendars. Every entry links to its official source."}
           </p>
 
-          {/* Stats */}
           {groupedCountries.length > 0 && (
-            <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
-              <div className="bg-white/10 backdrop-blur rounded-xl p-4">
-                <div className="text-2xl font-bold">{groupedCountries.length}</div>
-                <div className="text-sm text-gray-300">Countries with shows</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur rounded-xl p-4">
-                <div className="text-2xl font-bold">{total}</div>
-                <div className="text-sm text-gray-300">Upcoming exhibitions</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur rounded-xl p-4">
-                <div className="text-2xl font-bold">{isUAE ? "7" : allCountries.length}</div>
-                <div className="text-sm text-gray-300">{isUAE ? "Emirates" : "Countries covered"}</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur rounded-xl p-4">
-                <div className="text-2xl font-bold">{isUAE ? "8" : GLOBAL_EXHIBITION_DATA.cities.length}</div>
-                <div className="text-sm text-gray-300">{isUAE ? "Emirate cities" : "Cities covered"}</div>
-              </div>
+            <div className="mt-10 grid grid-cols-2 gap-px overflow-hidden border border-white/15 bg-white/15 md:grid-cols-4">
+              {[
+                { label: "Countries with shows", value: groupedCountries.length },
+                { label: "Upcoming exhibitions", value: total },
+                { label: isUAE ? "Emirates" : "Countries covered", value: isUAE ? "7" : allCountries.length },
+                { label: isUAE ? "Emirate cities" : "Cities covered", value: isUAE ? "8" : GLOBAL_EXHIBITION_DATA.cities.length },
+              ].map((stat) => (
+                <div key={stat.label} className="bg-[#141414] p-5">
+                  <div className="text-2xl font-light tracking-tight">{stat.value}</div>
+                  <div className="mt-1 text-[11px] uppercase tracking-[0.14em] text-white/50">{stat.label}</div>
+                </div>
+              ))}
             </div>
           )}
-        </div>
+        </motion.div>
       </section>
 
       {/* Filters */}
-      <section className="sticky top-0 z-30 bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-            <div className="flex flex-wrap gap-3 items-center">
-              <div className="flex items-center gap-2">
-                <FiFilter className="text-gray-500" />
-                <span className="text-sm font-medium text-gray-700">Filter:</span>
+      <section className="sticky top-0 z-30 border-b border-[#252525]/10 bg-white/95 backdrop-blur">
+        <div className="mx-auto max-w-[1400px] px-6 py-4 md:px-10">
+          <div className="flex flex-col items-start justify-between gap-4 lg:flex-row lg:items-center">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#5B5C5D]">
+                <FiFilter className="text-[#E03A3A]" /> Filter
               </div>
 
               <Select value={country} onValueChange={handleCountryChange}>
-                <SelectTrigger className="w-56">
+                <SelectTrigger className="w-56 rounded-none border-[#252525]/20">
                   <SelectValue placeholder="Select Country" />
                 </SelectTrigger>
                 <SelectContent>
@@ -218,7 +214,7 @@ export default function ExhibitionCalendarClient() {
               </Select>
 
               <Select value={city} onValueChange={handleCityChange} disabled={country === "all"}>
-                <SelectTrigger className="w-56">
+                <SelectTrigger className="w-56 rounded-none border-[#252525]/20">
                   <SelectValue placeholder={country === "all" ? "Select country first" : "All Cities"} />
                 </SelectTrigger>
                 <SelectContent>
@@ -232,7 +228,7 @@ export default function ExhibitionCalendarClient() {
               </Select>
 
               <Select value={year} onValueChange={(v) => { setYear(v); updateUrl({ year: v }); }}>
-                <SelectTrigger className="w-32">
+                <SelectTrigger className="w-32 rounded-none border-[#252525]/20">
                   <SelectValue placeholder="Year" />
                 </SelectTrigger>
                 <SelectContent>
@@ -244,26 +240,25 @@ export default function ExhibitionCalendarClient() {
               </Select>
             </div>
 
-            <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full lg:w-auto">
+            <form onSubmit={handleSearchSubmit} className="flex w-full gap-2 lg:w-auto">
               <div className="relative flex-1 lg:w-80">
-                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <FiSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#5B5C5D]" />
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search exhibition, venue, industry..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-[#252525]/20 py-2 pl-10 pr-4 text-sm focus:border-[#E03A3A] focus:outline-none"
                 />
               </div>
-              <Button type="submit" size="sm" className="bg-blue-600 hover:bg-blue-700">
+              <Button type="submit" size="sm" className="rounded-none bg-[#E03A3A] hover:bg-[#141414]">
                 Search
               </Button>
             </form>
           </div>
 
-          {/* Active filters summary */}
           {(country !== "all" || city !== "all" || year !== "all" || search) && (
-            <div className="mt-3 flex flex-wrap gap-2 items-center text-sm">
-              <span className="text-gray-500">Active:</span>
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+              <span className="text-[#5B5C5D]">Active:</span>
               {country !== "all" && <Badge variant="secondary">{country}</Badge>}
               {city !== "all" && <Badge variant="secondary">{city}</Badge>}
               {year !== "all" && <Badge variant="secondary">{year}</Badge>}
@@ -273,13 +268,13 @@ export default function ExhibitionCalendarClient() {
                 size="sm"
                 onClick={() => {
                   setCountry("all"); setCity("all"); setYear("all"); setSearch("");
-                  router.push("/exhibitions/calendar");
+                  router.push("/trade-shows");
                 }}
                 className="h-7 text-xs"
               >
                 Clear
               </Button>
-              <span className="text-gray-400 ml-2">
+              <span className="ml-2 text-[#5B5C5D]/70">
                 {loading ? "Loading..." : `${total} results`}
               </span>
             </div>
@@ -288,32 +283,32 @@ export default function ExhibitionCalendarClient() {
       </section>
 
       {/* Country quick nav */}
-      <section className="py-6 bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-            <FiGlobe className="w-4 h-4" /> Browse by Country ({groupedCountries.length} with exhibitions)
+      <section className="border-b border-[#252525]/10 bg-white py-6">
+        <div className="mx-auto max-w-[1400px] px-6 md:px-10">
+          <h3 className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#5B5C5D]">
+            <FiGlobe className="text-[#E03A3A]" /> Browse by country ({groupedCountries.length} with exhibitions)
           </h3>
           <div className="flex flex-wrap gap-2">
             {groupedCountries.slice(0, 20).map((g: any) => (
               <button
                 key={g.country}
                 onClick={() => handleCountryChange(g.country)}
-                className={`px-3 py-1.5 rounded-full text-sm border transition ${country === g.country ? "bg-blue-600 text-white border-blue-600" : "bg-gray-50 hover:bg-gray-100 border-gray-200"}`}
+                className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${country === g.country ? "border-[#E03A3A] bg-[#E03A3A] text-white" : "border-[#252525]/20 bg-white hover:border-[#E03A3A] hover:text-[#E03A3A]"}`}
               >
                 {g.country} <span className="ml-1 opacity-60">({g.totalExhibitions})</span>
               </button>
             ))}
-            {groupedCountries.length > 20 && <span className="text-sm text-gray-400 px-2 py-1.5">+ {groupedCountries.length - 20} more</span>}
+            {groupedCountries.length > 20 && <span className="px-2 py-1.5 text-sm text-[#5B5C5D]/60">+ {groupedCountries.length - 20} more</span>}
           </div>
           {country !== "all" && citiesForSelectedCountry.length > 0 && (
             <div className="mt-4">
-              <h4 className="text-xs font-semibold text-gray-600 mb-2">{country} - Cities</h4>
+              <h4 className="mb-2 text-xs font-semibold text-[#5B5C5D]">{country} — Cities</h4>
               <div className="flex flex-wrap gap-2">
                 {citiesForSelectedCountry.map(ci => (
                   <button
                     key={ci}
                     onClick={() => handleCityChange(ci)}
-                    className={`px-3 py-1 rounded-full text-xs border ${city === ci ? "bg-emerald-600 text-white border-emerald-600" : "bg-white hover:bg-gray-50 border-gray-200"}`}
+                    className={`rounded-full border px-3 py-1 text-xs transition-colors ${city === ci ? "border-[#141414] bg-[#141414] text-white" : "border-[#252525]/15 bg-white hover:border-[#141414]"}`}
                   >
                     {ci}
                   </button>
@@ -325,113 +320,127 @@ export default function ExhibitionCalendarClient() {
       </section>
 
       {/* Results */}
-      <section className="py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-10">
+        <div className="mx-auto max-w-[1400px] px-6 md:px-10">
           {loading ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {[...Array(6)].map((_, i) => (
-                <Card key={i} className="animate-pulse">
-                  <CardHeader><div className="h-5 bg-gray-200 rounded w-3/4" /></CardHeader>
-                  <CardContent><div className="h-20 bg-gray-100 rounded" /></CardContent>
+                <Card key={i} className="animate-pulse rounded-none border-[#252525]/10">
+                  <CardHeader><div className="h-5 w-3/4 rounded bg-[#252525]/10" /></CardHeader>
+                  <CardContent><div className="h-20 rounded bg-[#252525]/5" /></CardContent>
                 </Card>
               ))}
             </div>
           ) : exhibitions.length === 0 ? (
-            <Card className="p-12 text-center">
-              <FiCalendar className="w-12 h-12 mx-auto text-gray-300 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-700">No exhibitions found</h3>
-              <p className="text-gray-500 mt-2 max-w-xl mx-auto">
+            <Card className="rounded-none border-[#252525]/10 p-12 text-center">
+              <FiCalendar className="mx-auto mb-4 h-12 w-12 text-[#252525]/20" />
+              <h3 className="text-lg font-semibold text-[#252525]">No exhibitions found</h3>
+              <p className="mt-2 max-w-xl mx-auto text-[#5B5C5D]">
                 {country !== "all" || city !== "all"
                   ? `No verified exhibitions for ${[country !== "all" ? country : "", city !== "all" ? city : ""].filter(Boolean).join(" • ")} yet. Our sub-agent crawls official venue sites weekly - check back soon or try another city.`
                   : "No upcoming exhibitions match your filters. Try clearing filters or searching a different term."}
               </p>
               <div className="mt-6 flex justify-center gap-2">
-                <Button variant="outline" onClick={() => { setCountry("all"); setCity("all"); setYear("all"); setSearch(""); router.push("/exhibitions/calendar"); }}>
+                <Button variant="outline" className="rounded-none" onClick={() => { setCountry("all"); setCity("all"); setYear("all"); setSearch(""); router.push("/trade-shows"); }}>
                   View All
                 </Button>
-                <a href="/api/exhibitions/calendar?groupBy=country" target="_blank" className="text-sm text-blue-600 hover:underline flex items-center gap-1 px-4 py-2">
-                  View API <FiExternalLink className="w-3 h-3" />
+                <a href="/api/exhibitions/calendar?groupBy=country" target="_blank" className="flex items-center gap-1 px-4 py-2 text-sm text-[#E03A3A] hover:underline">
+                  View API <FiExternalLink className="h-3 w-3" />
                 </a>
               </div>
             </Card>
           ) : (
             <>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">
+              <div className="mb-6 flex items-center justify-between">
+                <h2 className="text-xl font-light tracking-tight text-[#252525]">
                   {total} {country !== "all" ? `exhibitions in ${city !== "all" ? `${city}, ${country}` : country}` : "upcoming exhibitions"}
                 </h2>
-                <span className="text-sm text-gray-500">Sorted by start date • Only verified sources</span>
+                <span className="text-sm text-[#5B5C5D]">Sorted by start date • Only verified sources</span>
               </div>
 
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {exhibitions.map((ex) => (
-                  <Card key={ex.slug} className="hover:shadow-lg transition-shadow border border-gray-200 flex flex-col">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <Badge variant={ex.verified ? "default" : "secondary"} className={ex.verified ? "bg-emerald-600" : "bg-amber-100 text-amber-700"}>
-                          {ex.verified ? <><FiCheckCircle className="w-3 h-3 mr-1" /> Verified • Official</> : "Unverified • Pending check"}
-                        </Badge>
-                        {ex.featured && <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">Featured</Badge>}
-                      </div>
-                      <CardTitle className="text-lg leading-tight line-clamp-2">
-                        {ex.name}
-                      </CardTitle>
-                      {ex.industry && <Badge variant="secondary" className="w-fit mt-2 text-xs">{ex.industry}</Badge>}
-                    </CardHeader>
-                    <CardContent className="flex-1 flex flex-col">
-                      <div className="space-y-2 text-sm text-gray-600 flex-1">
-                        <div className="flex items-center gap-2">
-                          <FiMapPin className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                          <span>{ex.city_name}, {ex.country_name} • {ex.venue || "TBA venue"}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <FiCalendar className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                          <span>{formatDate(ex.start_date)} — {formatDate(ex.end_date)}</span>
-                        </div>
-                        {ex.website && (
-                          <div className="flex items-center gap-2 truncate">
-                            <FiExternalLink className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                            <a href={ex.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate">
-                              Official site
-                            </a>
-                            {ex.source_url && ex.source_url !== ex.website && (
-                              <span className="text-gray-400 text-xs truncate">• src: {new URL(ex.source_url).hostname}</span>
+              <motion.div
+                initial="hidden"
+                animate="show"
+                variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}
+                className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+              >
+                <AnimatePresence>
+                  {exhibitions.map((ex) => (
+                    <motion.div
+                      key={ex.slug}
+                      variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0 } }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.35, ease: "easeOut" }}
+                    >
+                      <Card className="group flex h-full flex-col rounded-none border-[#252525]/10 transition-colors duration-300 hover:border-[#E03A3A]">
+                        <CardHeader className="pb-3">
+                          <div className="mb-2 flex items-start justify-between gap-2">
+                            <Badge variant={ex.verified ? "default" : "secondary"} className={ex.verified ? "rounded-none bg-[#141414]" : "rounded-none bg-amber-100 text-amber-700"}>
+                              {ex.verified ? <><FiCheckCircle className="mr-1 h-3 w-3" /> Verified • Official</> : "Unverified • Pending check"}
+                            </Badge>
+                            {ex.featured && <Badge variant="outline" className="rounded-none border-[#EC6A6A]/40 bg-[#EC6A6A]/10 text-[#E03A3A]">Featured</Badge>}
+                          </div>
+                          <CardTitle className="text-lg font-medium leading-tight line-clamp-2">
+                            {ex.name}
+                          </CardTitle>
+                          {ex.industry && <Badge variant="secondary" className="mt-2 w-fit rounded-none text-xs">{ex.industry}</Badge>}
+                        </CardHeader>
+                        <CardContent className="flex flex-1 flex-col">
+                          <div className="flex-1 space-y-2 text-sm text-[#5B5C5D]">
+                            <div className="flex items-center gap-2">
+                              <FiMapPin className="h-4 w-4 flex-shrink-0 text-[#E03A3A]" />
+                              <span>{ex.city_name}, {ex.country_name} • {ex.venue || "TBA venue"}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <FiCalendar className="h-4 w-4 flex-shrink-0 text-[#E03A3A]" />
+                              <span>{formatDate(ex.start_date)} — {formatDate(ex.end_date)}</span>
+                            </div>
+                            {ex.website && (
+                              <div className="flex items-center gap-2 truncate">
+                                <FiExternalLink className="h-4 w-4 flex-shrink-0 text-[#5B5C5D]/60" />
+                                <a href={ex.website} target="_blank" rel="noopener noreferrer" className="truncate text-[#E03A3A] hover:underline">
+                                  Official site
+                                </a>
+                                {ex.source_url && ex.source_url !== ex.website && (
+                                  <span className="truncate text-xs text-[#5B5C5D]/60">• src: {new URL(ex.source_url).hostname}</span>
+                                )}
+                              </div>
                             )}
                           </div>
-                        )}
-                      </div>
 
-                      <div className="mt-4 pt-4 border-t flex gap-2">
-                        <Button asChild size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700">
-                          <a href={ex.website || ex.source_url || "#"} target="_blank" rel="noopener noreferrer">
-                            View Dates
-                          </a>
-                        </Button>
-                        <Button asChild variant="outline" size="sm" className="flex-1">
-                          <Link href={`/exhibitions/calendar?country=${encodeURIComponent(ex.country_name)}&city=${encodeURIComponent(ex.city_name)}`}>
-                            {ex.city_name} shows
-                          </Link>
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                          <div className="mt-4 flex gap-2 border-t border-[#252525]/10 pt-4">
+                            <Button asChild size="sm" className="flex-1 rounded-none bg-[#E03A3A] hover:bg-[#141414]">
+                              <a href={ex.website || ex.source_url || "#"} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-1">
+                                View Dates <FiArrowUpRight className="h-3 w-3" />
+                              </a>
+                            </Button>
+                            <Button asChild variant="outline" size="sm" className="flex-1 rounded-none border-[#252525]/20">
+                              <Link href={`/trade-shows?country=${encodeURIComponent(ex.country_name)}&city=${encodeURIComponent(ex.city_name)}`}>
+                                {ex.city_name} shows
+                              </Link>
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </motion.div>
             </>
           )}
         </div>
       </section>
 
       {/* Footer note */}
-      <section className="py-8 bg-white border-t">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-500">
+      <section className="border-t border-[#252525]/10 bg-white py-8">
+        <div className="mx-auto max-w-[1400px] px-6 text-center text-sm text-[#5B5C5D] md:px-10">
           <p>
             Calendar built by the Standzon Exhibition Calendar Sub-Agent • Sources:{" "}
-            <span className="font-medium">10Times (UFI), TradeFairDates (m+a), ExpoDataBase, EventsEye, AUMA, DWTC, Messe Frankfurt/München/Berlin, Koelnmesse, Fira Barcelona, Javits, CES, Canton Fair</span>
-            {" • "}Every entry stores its <code className="bg-gray-100 px-1 rounded">source_url</code> and <code className="bg-gray-100 px-1 rounded">verified</code> flag. No dummy dates.
+            <span className="font-medium text-[#252525]">10Times (UFI), TradeFairDates (m+a), ExpoDataBase, EventsEye, AUMA, DWTC, Messe Frankfurt/München/Berlin, Koelnmesse, Fira Barcelona, Javits, CES, Canton Fair</span>
+            {" • "}Every entry stores its <code className="rounded bg-[#252525]/5 px-1">source_url</code> and <code className="rounded bg-[#252525]/5 px-1">verified</code> flag. No dummy dates.
           </p>
           <p className="mt-2">
-            Admin: trigger full refresh via <code className="bg-gray-100 px-1 rounded">POST /api/admin/exhibitions/sync</code> with service role key. Or run locally: <code className="bg-gray-100 px-1 rounded">npx ts-node scripts/agents/exhibition-calendar-sync.ts</code>
+            Admin: trigger full refresh via <code className="rounded bg-[#252525]/5 px-1">POST /api/admin/exhibitions/sync</code> with service role key. Or run locally: <code className="rounded bg-[#252525]/5 px-1">npx ts-node scripts/agents/exhibition-calendar-sync.ts</code>
           </p>
         </div>
       </section>
