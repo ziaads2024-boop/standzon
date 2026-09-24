@@ -40,18 +40,19 @@ export default function HeroV2({
     >
       {/* Background: CMS image if set, otherwise a quiet architectural grid */}
       <motion.div style={{ y: imgY, scale: imgScale }} className="absolute inset-0 z-0">
-        {bgImage ? (
-          <Image src={bgImage} alt="" fill priority sizes="100vw" quality={85} className="object-cover opacity-60" />
-        ) : (
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage:
-                "linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px)",
-              backgroundSize: "88px 88px",
-            }}
-          />
-        )}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          poster="/videos/hero-poster.jpg"
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover opacity-60"
+        >
+          <source src="/videos/hero-loop.webm" type="video/webm" />
+          <source src="/videos/hero-loop.mp4" type="video/mp4" />
+        </video>
       </motion.div>
       <div className="absolute inset-0 z-[1] bg-[radial-gradient(60%_60%_at_85%_10%,rgba(224,58,58,.28),transparent_70%)]" />
       <div className="absolute inset-0 z-[1] bg-gradient-to-t from-[#141414] via-[#141414]/55 to-[#141414]/30" />
