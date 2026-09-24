@@ -1,14 +1,11 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Inter, Poppins, Roboto, Montserrat, Red_Hat_Display } from "next/font/google";
+import { Inter } from "next/font/google";
 import { Toaster } from '@/components/ui/toaster';
 import siteMetadata from '@/app/metadata.json';
 
-import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
-import CriticalResourcePreloader from '@/components/CriticalResourcePreloader';
 import DeferredAnalytics from '@/components/DeferredAnalytics';
 import DeferredMonitoring from '@/components/DeferredMonitoring';
-import NonCriticalScripts from '@/components/NonCriticalScripts';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import AppWrapper from '@/components/AppWrapper';
 import { getFooterSettings } from '@/lib/data/footerSettings';
@@ -22,42 +19,11 @@ const inter = Inter({
   display: 'swap',
   preload: true,
   fallback: ['system-ui', 'arial'],
-  weight: ['300', '400', '500', '600', '700', '800', '900'],
+  weight: ['300', '400', '500', '600', '700'],
   variable: '--font-inter',
 });
 
 // Limit font weights for performance
-const poppins = Poppins({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'], // Reduced from ['300','400','500','600','700']
-  display: 'optional',
-  preload: true,
-  variable: '--font-poppins'
-});
-
-const roboto = Roboto({
-  subsets: ['latin'],
-  weight: ['400', '500', '700'], // Reduced from ['300','400','500','700']
-  display: 'optional',
-  preload: true,
-  variable: '--font-roboto'
-});
-
-const montserrat = Montserrat({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'], // Reduced from ['400','500','600','700']
-  display: 'optional',
-  preload: true,
-  variable: '--font-montserrat'
-});
-
-const redHatDisplay = Red_Hat_Display({
-  subsets: ['latin'],
-  weight: ['400', '500', '700'], // Reduced from ['400','500','600','700','900']
-  display: 'optional',
-  preload: true,
-  variable: '--font-red-hat-display'
-});
 
 
 
@@ -114,9 +80,6 @@ export default async function RootLayout({
         {/* ✅ FAVICON: Add favicon */}
         <link rel="icon" type="image/png" href="/favicon.png" />
 
-        {/* Material Symbols Outlined for admin dashboard */}
-        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700&display=swap" rel="stylesheet" />
-
         {/* ✅ PWA: Add manifest for installable app */}
         <link rel="manifest" href="/manifest.json" />
 
@@ -139,75 +102,22 @@ export default async function RootLayout({
             double up and fight the per-page noindex on thin / paginated pages. */}
 
         {/* ✅ PERFORMANCE: Critical resource optimization */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-        <link rel="preconnect" href="https://api.mapbox.com" />
-        <link rel="dns-prefetch" href="//vercel.live" />
+        
+        
+        
+        
+        
         <link rel="dns-prefetch" href="//vitals.vercel-insights.com" />
-        <link rel="dns-prefetch" href="//www.google-analytics.com" />
+        
 
         {/* ✅ PERFORMANCE: Preload critical resources */}
         {/* Next.js Font handles preloading automatically */}
 
-        {/* ✅ PERFORMANCE: Critical CSS for hero section */}
-        <style>{`
-            /* Critical hero styles */
-            .hero-gradient {
-              background: linear-gradient(135deg, #2B2B2B 0%, #8C1F1F 50%, #2B2B2B 100%);
-            }
-            
-            /* Critical button styles */
-            .btn-primary {
-              background: linear-gradient(90deg, #E03A3A 0%, #EC6A6A 100%);
-            }
-            
-            /* Animation optimizations */
-            .animate-bounce {
-              animation: bounce 2s infinite;
-            }
-            
-            .animate-pulse {
-              animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-            }
-            
-            @keyframes bounce {
-              0%, 100% { transform: translateY(0); }
-              50% { transform: translateY(-10px); }
-            }
-            
-            @keyframes pulse {
-              0%, 100% { opacity: 1; }
-              50% { opacity: 0.5; }
-            }
-          `}</style>
-
-        {/* ✅ PERFORMANCE: Inline critical CSS */}
-        <style>{`
-            /* Critical CSS for header and navigation */
-            .nav-container { display: flex; align-items: center; justify-content: space-between; }
-            .header-gradient { background: linear-gradient(135deg, #8C1F1F 0%, #2B2B2B 100%); }
-            
-            /* Critical typography */
-            .text-gradient { background: linear-gradient(90deg, #E03A3A 0%, #EC6A6A 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-            
-            /* Critical layout */
-            .page-container { min-height: 100vh; display: flex; flex-direction: column; }
-            .main-content { flex: 1; }
-            
-            /* Sticky navigation for better UX */
-            nav.sticky-nav { position: sticky; top: 0; z-index: 100; }
-            
-            /* Optimized scroll behavior */
-            html { scroll-behavior: smooth; scroll-padding-top: 4rem; }
-          `}</style>
-
         {/* Note: Removed preload links that were causing warnings in development */}
       </head>
-      <body className={`${inter.variable} ${poppins.variable} ${roboto.variable} ${montserrat.variable} ${redHatDisplay.variable} ${inter.className} font-sans h-full m-0 p-0`} suppressHydrationWarning>
+      <body className={`${inter.variable} ${inter.className} font-sans h-full m-0 p-0`} suppressHydrationWarning>
         <JsonLd data={[getOrganizationSchema(), getWebsiteSchema()]} />
         <ThemeProvider>
-          <CriticalResourcePreloader />
           {/* <GlobalTypography /> */}
           <AppWrapper initialFooter={initialFooter}>
             {children}
@@ -215,7 +125,6 @@ export default async function RootLayout({
           <Toaster />
           <DeferredAnalytics />
           <DeferredMonitoring />
-          <NonCriticalScripts />
         </ThemeProvider>
       </body>
     </html>

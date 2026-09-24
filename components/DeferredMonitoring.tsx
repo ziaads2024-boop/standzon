@@ -1,28 +1,19 @@
 'use client';
 
 import { useEffect } from 'react';
-import dynamic from 'next/dynamic';
 
-// Dynamically import non-critical components with no SSR
-const PerformanceMonitor = dynamic(() => import('./PerformanceMonitor'), { ssr: false });
-const CoreWebVitalsMonitor = dynamic(() => import('./CoreWebVitalsMonitor'), { ssr: false });
-const ServiceWorkerRegistration = dynamic(() => import('./ServiceWorkerRegistration'), { ssr: false });
-
+// The old service worker cached stale chunks/pages; it is no longer used.
+// Unregister it (and drop its caches) for returning visitors, then do nothing.
 export default function DeferredMonitoring() {
   useEffect(() => {
-    // Only render these components after a delay to avoid impacting initial render
-    const timer = setTimeout(() => {
-      // Components will be rendered by Next.js dynamic import
-    }, 3000); // Wait 3 seconds after initial render
-
-    return () => clearTimeout(timer);
+    if (!('serviceWorker' in navigator)) return;
+    navigator.serviceWorker
+      .getRegistrations()
+      .then((regs) => regs.forEach((r) => r.unregister()))
+      .catch(() => {});
+    if ('caches' in window) {
+      caches.keys().then((keys) => keys.forEach((k) => caches.delete(k))).catch(() => {});
+    }
   }, []);
-
-  return (
-    <>
-      <PerformanceMonitor />
-      <CoreWebVitalsMonitor />
-      <ServiceWorkerRegistration />
-    </>
-  );
+  return null;
 }
